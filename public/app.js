@@ -1,42 +1,148 @@
-// Мондиал 2026 — прогнози на живо
+// Мондиал 2026 — прогнози на живо (двуезичен: BG / EN)
 "use strict";
 
-// български имена на отборите (FIFA код -> име)
-const BG = {
-  MEX:"Мексико", KOR:"Южна Корея", CZE:"Чехия", RSA:"Южна Африка",
-  SUI:"Швейцария", CAN:"Канада", BIH:"Босна и Херцеговина", QAT:"Катар",
-  BRA:"Бразилия", MAR:"Мароко", SCO:"Шотландия", HAI:"Хаити",
-  TUR:"Турция", PAR:"Парагвай", AUS:"Австралия", USA:"САЩ",
-  ECU:"Еквадор", GER:"Германия", CIV:"Кот д'Ивоар", CUW:"Кюрасао",
-  NED:"Нидерландия", JPN:"Япония", SWE:"Швеция", TUN:"Тунис",
-  BEL:"Белгия", IRN:"Иран", EGY:"Египет", NZL:"Нова Зеландия",
-  ESP:"Испания", URU:"Уругвай", CPV:"Кабо Верде", KSA:"Саудитска Арабия",
-  FRA:"Франция", NOR:"Норвегия", SEN:"Сенегал", IRQ:"Ирак",
-  ARG:"Аржентина", AUT:"Австрия", ALG:"Алжир", JOR:"Йордания",
-  POR:"Португалия", COL:"Колумбия", UZB:"Узбекистан", COD:"ДР Конго",
-  ENG:"Англия", CRO:"Хърватия", PAN:"Панама", GHA:"Гана",
-  // държави на съдии извън 48-те отбора
-  ITA:"Италия", POL:"Полша", ROU:"Румъния", SVN:"Словения", SVK:"Словакия",
-  UKR:"Украйна", LTU:"Литва", ISR:"Израел", GEO:"Грузия", BUL:"България",
-  GUA:"Гватемала", HON:"Хондурас", SLV:"Салвадор", CRC:"Коста Рика",
-  PER:"Перу", CHI:"Чили", VEN:"Венецуела", BOL:"Боливия",
-  GAM:"Гамбия", ZAM:"Замбия", MOZ:"Мозамбик", KEN:"Кения", LBY:"Либия",
-  UAE:"ОАЕ", OMA:"Оман", TJK:"Таджикистан", MAS:"Малайзия", SGP:"Сингапур", CHN:"Китай",
+// ---- език ----
+let lang = localStorage.getItem("lang") || "bg";
+const loc = () => lang === "bg" ? "bg-BG" : "en-GB";
+
+// имена на отборите по код
+const NAMES = {
+  bg: {
+    MEX:"Мексико", KOR:"Южна Корея", CZE:"Чехия", RSA:"Южна Африка", SUI:"Швейцария", CAN:"Канада",
+    BIH:"Босна и Херцеговина", QAT:"Катар", BRA:"Бразилия", MAR:"Мароко", SCO:"Шотландия", HAI:"Хаити",
+    TUR:"Турция", PAR:"Парагвай", AUS:"Австралия", USA:"САЩ", ECU:"Еквадор", GER:"Германия",
+    CIV:"Кот д'Ивоар", CUW:"Кюрасао", NED:"Нидерландия", JPN:"Япония", SWE:"Швеция", TUN:"Тунис",
+    BEL:"Белгия", IRN:"Иран", EGY:"Египет", NZL:"Нова Зеландия", ESP:"Испания", URU:"Уругвай",
+    CPV:"Кабо Верде", KSA:"Саудитска Арабия", FRA:"Франция", NOR:"Норвегия", SEN:"Сенегал", IRQ:"Ирак",
+    ARG:"Аржентина", AUT:"Австрия", ALG:"Алжир", JOR:"Йордания", POR:"Португалия", COL:"Колумбия",
+    UZB:"Узбекистан", COD:"ДР Конго", ENG:"Англия", CRO:"Хърватия", PAN:"Панама", GHA:"Гана",
+    ITA:"Италия", POL:"Полша", ROU:"Румъния", SVN:"Словения", SVK:"Словакия", UKR:"Украйна", LTU:"Литва",
+    ISR:"Израел", GEO:"Грузия", BUL:"България", GUA:"Гватемала", HON:"Хондурас", SLV:"Салвадор",
+    CRC:"Коста Рика", PER:"Перу", CHI:"Чили", VEN:"Венецуела", BOL:"Боливия", GAM:"Гамбия", ZAM:"Замбия",
+    MOZ:"Мозамбик", KEN:"Кения", LBY:"Либия", UAE:"ОАЕ", OMA:"Оман", TJK:"Таджикистан", MAS:"Малайзия",
+    SGP:"Сингапур", CHN:"Китай",
+  },
+  en: {
+    MEX:"Mexico", KOR:"South Korea", CZE:"Czechia", RSA:"South Africa", SUI:"Switzerland", CAN:"Canada",
+    BIH:"Bosnia & Herzegovina", QAT:"Qatar", BRA:"Brazil", MAR:"Morocco", SCO:"Scotland", HAI:"Haiti",
+    TUR:"Türkiye", PAR:"Paraguay", AUS:"Australia", USA:"USA", ECU:"Ecuador", GER:"Germany",
+    CIV:"Ivory Coast", CUW:"Curaçao", NED:"Netherlands", JPN:"Japan", SWE:"Sweden", TUN:"Tunisia",
+    BEL:"Belgium", IRN:"Iran", EGY:"Egypt", NZL:"New Zealand", ESP:"Spain", URU:"Uruguay",
+    CPV:"Cape Verde", KSA:"Saudi Arabia", FRA:"France", NOR:"Norway", SEN:"Senegal", IRQ:"Iraq",
+    ARG:"Argentina", AUT:"Austria", ALG:"Algeria", JOR:"Jordan", POR:"Portugal", COL:"Colombia",
+    UZB:"Uzbekistan", COD:"DR Congo", ENG:"England", CRO:"Croatia", PAN:"Panama", GHA:"Ghana",
+    ITA:"Italy", POL:"Poland", ROU:"Romania", SVN:"Slovenia", SVK:"Slovakia", UKR:"Ukraine", LTU:"Lithuania",
+    ISR:"Israel", GEO:"Georgia", BUL:"Bulgaria", GUA:"Guatemala", HON:"Honduras", SLV:"El Salvador",
+    CRC:"Costa Rica", PER:"Peru", CHI:"Chile", VEN:"Venezuela", BOL:"Bolivia", GAM:"Gambia", ZAM:"Zambia",
+    MOZ:"Mozambique", KEN:"Kenya", LBY:"Libya", UAE:"UAE", OMA:"Oman", TJK:"Tajikistan", MAS:"Malaysia",
+    SGP:"Singapore", CHN:"China",
+  },
 };
-const STAGE_BG = {
-  "First Stage":"Групова фаза", "Round of 32":"1/16-финали", "Round of 16":"Осминафинали",
-  "Quarter-final":"Четвъртфинали", "Quarter-finals":"Четвъртфинали",
-  "Semi-final":"Полуфинали", "Semi-finals":"Полуфинали",
-  "Play-off for third place":"Мач за 3-то място", "Final":"Финал",
+const STAGES = {
+  bg: { "First Stage":"Групова фаза", "Round of 32":"1/16-финали", "Round of 16":"Осминафинали", "Quarter-final":"Четвъртфинали", "Quarter-finals":"Четвъртфинали", "Semi-final":"Полуфинали", "Semi-finals":"Полуфинали", "Play-off for third place":"Мач за 3-то място", "Final":"Финал" },
+  en: { "First Stage":"Group stage", "Round of 32":"Round of 32", "Round of 16":"Round of 16", "Quarter-final":"Quarter-final", "Quarter-finals":"Quarter-finals", "Semi-final":"Semi-final", "Semi-finals":"Semi-finals", "Play-off for third place":"Third-place play-off", "Final":"Final" },
 };
 
-const name = code => BG[code] || code;
+const L = {
+  bg: {
+    brandPre:"Мондиал", subtitle:"Прогнози на живо · Elo + статистики от няколко източника",
+    tab_schedule:"Програма", tab_groups:"Групи", tab_champion:"Шампион", tab_stats:"Класации", tab_refs:"Съдии", tab_info:"Инфо",
+    f_all:"Всички", f_today:"Днес", f_upcoming:"Предстоящи", f_played:"Изиграни",
+    loading:"Зареждане…", updated:"Обновено", liveRefresh:"🔴 на живо — обновяване на 30 сек", normalRefresh:"обновяване на 5 мин",
+    loadErr:"Грешка при зареждане", retry:"нов опит след 30 сек",
+    footer1:'Данни от eloratings.net, api.fifa.com и ESPN — обновяват се автоматично.', footer2:"Прогнозите са вероятности от Elo + голов профил + статистики, не са гаранции.", footer3:"⚠ Залагай само за забавление и с малки суми.",
+    acc:"Успеваемост", a_outcome:"изход", a_goals:"голове", a_btts:"гол-гол",
+    ph_await:"очаква се", ph_1st:"1-ви от група", ph_2nd:"2-ри от група", ph_3rd:"3-ти", ph_winner:"Победител от мач", ph_loser:"Загубил от мач", ph_group:"Група",
+    ref_first:"първи мач на турнира", ref_ypg:"жълти/мач", ref_reds:"червени", ref_at:"на турнира",
+    pp_forMatch:"прогноза за мача", pp_byLineup:"прогноза по състав", pp_forTeam:"очаквано за отбора",
+    pp_note_pos:"Оценка по позиция (отборът още няма статистики на турнира).", pp_note_team:"Индивидуалните числа по играч излизат след първия мач на отбора или щом се обяви съставът (~час преди старта).",
+    th_player:"Играч", th_shots:"Удари", th_ontarget:"Точни", th_fouls:"Наруш.", th_ycChance:"🟨 шанс", th_metric:"Показател", th_pred:"Прогноза",
+    m_shots:"Удари", m_ontarget:"Точни удари", m_fouls:"Нарушения",
+    pos_gk:"Вр", pos_def:"Защ", pos_mid:"Полу", pos_fwd:"Нап",
+    st_possession:"Притежание %", st_corners:"Корнери", st_offsides:"Засади", st_passpct:"Точни пасове %", st_tackles:"Отнемания", st_interceptions:"Пресечени топки", st_yellow:"Жълти картони", st_red:"Червени картони",
+    pl_inMatch:"Играчите в мача", th_goals:"Голове", th_assists:"Асист.", th_suffered:"Пострадал", th_cards:"Картони",
+    v_title:"Примерна прогноза за мача", v_lineupOut:"✅ съставите излязоха", v_outcome:"Изход", v_wins:"печели", v_draw:"Равенство",
+    conf_clear:"ясен фаворит", conf_slight:"лек превес", conf_open:"оспорван мач", v_result:"Резултат", v_expGoals:"очаквани голове",
+    v_goals:"Голове", over:"Над 2.5", under:"Под 2.5", v_btts:"Гол-гол", yes:"Да", no:"Не", v_btts_sub:"и двата да бележат",
+    v_cards:"Картони", lbl_yellow:"жълти", lbl_red:"червени", v_corners:"Корнери",
+    phl_title:"Акценти по играчи:", phl_shots:"най-много удари", phl_card:"най-вероятен картон",
+    ls_possession:"Притежание", ls_cards:"Картони 🟨🟥",
+    lp_title:"Играчи на живо", lp_none:"още няма действия", lp_fouls:"наруш.",
+    h2h_title:"Преки срещи (последни", h2h_draws:"равни",
+    ts_title:"⚽ Кой ще отбележи (шанс за гол в мача)",
+    pr_hit:"Прогнозата позна", over25:"над 2.5", under25:"под 2.5", yes_l:"да", no_l:"не", draw_l:"равен",
+    sp_mild:"🙂 леко изненадващо", sp_surprise:"😮 изненада", sp_big:"🤯 голяма изненада", rf:"⚠️ рисков фаворит",
+    live_now:"● НА ЖИВО", m_no:"мач №", time_suffix:" ч.", pens:"дузпи", corners_w:"корнера", live_winprob:"вероятност за победа сега",
+    src_combines:"Прогнозата комбинира:", src_goalprofile:"голов профил", src_stats:"статистики", src_from:"от", src_statdetail:"(голове, владение, удари — FIFA & ESPN)", src_noMatches:"тези отбори още нямат мачове на турнира",
+    st_expResult:"Очакван резултат", st_over25:"Над 2.5 гола", st_btts:"Двата бележат", st_advance:"Класиране —", st_power:"Сила (Elo + форма)",
+    st_predcorners:"Прогноза корнери", st_predyellow:"Прогноза 🟨 жълти", st_predred:"Прогноза 🟥 червени",
+    ref_label:"съдия:", ref_nodata:"(още няма данни)", ref_notnamed:"съдията не е обявен", red_atleastone:"% шанс за поне един",
+    topscores:"Най-вероятни резултати:", pp_section:"📊 Прогнозна статистика на играчите за този мач",
+    pp_secnote:"Нагласено за този съперник (по-атакуващ мач → повече удари; по-слабият отбор → повече нарушения).", pp_secnote_lineup:" Съставите излязоха — показани са титулярите.", pp_secnote_wait:" За отбори без изиграни мачове прогнозата излиза щом съставите се обявят (~час преди старта).",
+    sched_empty:"Няма мачове за този филтър.",
+    grp_played1:"от", grp_played2:"мача изиграни · 5000 симулации на оставащите",
+    gh_team:"Отбор", gh_ptsnow:"Точки сега", gh_exp:"Очаквани", gh_1st:"1-во", gh_2nd:"2-ро", gh_3rd:"3-то",
+    ch_title:"🏅 Прогнозна схема на турнира", ch_note:"3000 симулации на оставащия турнир. Всеки слот показва най-вероятния отбор и шанса му да стигне дотам; зеленото е предвиденият победител.", ch_note2:"групови мача изиграни — схемата се обновява след всеки мач. Превърти настрани →", ch_banner:"🏆 Прогнозиран шампион:", ch_final:"финал",
+    r_final:"Финал",
+    lb_scorers:"⚽ Голмайстори (битка за Златната бутонка)", lb_assists:"🅰️ Асистенции", lb_shots:"🎯 Най-много удари", lb_cards:"🟨 Най-наказвани", lb_attack:"🔥 Най-резултатни отбори", lb_defense:"🛡️ Най-стегната защита",
+    lh_goals:"Голове", lh_assists:"Асист.", lh_apps:"Мачове", lh_shots:"Удари", lh_ontarget:"Точни", lh_fouls:"Нарушения", lh_team:"Отбор", lh_gpm:"Голове/мач", lh_total:"Общо", lh_gapm:"Допуснати/мач", lb_empty:"Още няма изиграни мачове — класациите ще се появят след първите срещи.",
+    rf_title:"Съдии на турнира", rf_note:"Статистиките са от изиграните мачове на Мондиал 2026, които всеки съдия е ръководил.", rfh_ref:"Съдия", rfh_country:"Държава", rfh_matches:"Мачове", rfh_ytotal:"🟨 общо", rfh_ypm:"🟨/мач", rfh_next:"Следващ мач", rf_empty:"Още няма назначени съдии.",
+  },
+  en: {
+    brandPre:"World Cup", subtitle:"Live predictions · Elo + multi-source stats",
+    tab_schedule:"Schedule", tab_groups:"Groups", tab_champion:"Winner", tab_stats:"Leaders", tab_refs:"Referees", tab_info:"About",
+    f_all:"All", f_today:"Today", f_upcoming:"Upcoming", f_played:"Played",
+    loading:"Loading…", updated:"Updated", liveRefresh:"🔴 live — refreshing every 30s", normalRefresh:"refreshing every 5 min",
+    loadErr:"Loading error", retry:"retrying in 30s",
+    footer1:'Data from eloratings.net, api.fifa.com and ESPN — auto-updated.', footer2:"Predictions are probabilities from Elo + goal profile + stats, not guarantees.", footer3:"⚠ For fun only — bet small if at all.",
+    acc:"Accuracy", a_outcome:"outcome", a_goals:"goals", a_btts:"BTTS",
+    ph_await:"TBD", ph_1st:"1st of Group", ph_2nd:"2nd of Group", ph_3rd:"3rd", ph_winner:"Winner of match", ph_loser:"Loser of match", ph_group:"Group",
+    ref_first:"first match at the tournament", ref_ypg:"yellow/match", ref_reds:"red", ref_at:"at the tournament",
+    pp_forMatch:"match projection", pp_byLineup:"lineup projection", pp_forTeam:"team projection",
+    pp_note_pos:"Estimated by position (team has no tournament stats yet).", pp_note_team:"Per-player numbers appear after the team's first match or once the lineup is out (~1h before kickoff).",
+    th_player:"Player", th_shots:"Shots", th_ontarget:"On tgt", th_fouls:"Fouls", th_ycChance:"🟨 chance", th_metric:"Metric", th_pred:"Projection",
+    m_shots:"Shots", m_ontarget:"Shots on target", m_fouls:"Fouls",
+    pos_gk:"GK", pos_def:"DEF", pos_mid:"MID", pos_fwd:"FWD",
+    st_possession:"Possession %", st_corners:"Corners", st_offsides:"Offsides", st_passpct:"Pass accuracy %", st_tackles:"Tackles", st_interceptions:"Interceptions", st_yellow:"Yellow cards", st_red:"Red cards",
+    pl_inMatch:"Players in the match", th_goals:"Goals", th_assists:"Assists", th_suffered:"Fouled", th_cards:"Cards",
+    v_title:"Match prediction", v_lineupOut:"✅ lineups out", v_outcome:"Outcome", v_wins:"to win", v_draw:"Draw",
+    conf_clear:"clear favourite", conf_slight:"slight edge", conf_open:"toss-up", v_result:"Score", v_expGoals:"expected goals",
+    v_goals:"Goals", over:"Over 2.5", under:"Under 2.5", v_btts:"BTTS", yes:"Yes", no:"No", v_btts_sub:"both teams to score",
+    v_cards:"Cards", lbl_yellow:"yellow", lbl_red:"red", v_corners:"Corners",
+    phl_title:"Player highlights:", phl_shots:"most shots", phl_card:"most likely booking",
+    ls_possession:"Possession", ls_cards:"Cards 🟨🟥",
+    lp_title:"Live players", lp_none:"no actions yet", lp_fouls:"fouls",
+    h2h_title:"Head-to-head (last", h2h_draws:"draws",
+    ts_title:"⚽ Who'll score (chance to score)",
+    pr_hit:"Prediction hit", over25:"over 2.5", under25:"under 2.5", yes_l:"yes", no_l:"no", draw_l:"draw",
+    sp_mild:"🙂 mild surprise", sp_surprise:"😮 surprise", sp_big:"🤯 big surprise", rf:"⚠️ risky favourite",
+    live_now:"● LIVE", m_no:"match #", time_suffix:"", pens:"pens", corners_w:"corners", live_winprob:"win probability now",
+    src_combines:"Prediction combines:", src_goalprofile:"goal profile", src_stats:"stats", src_from:"from", src_statdetail:"(goals, possession, shots — FIFA & ESPN)", src_noMatches:"these teams have no tournament matches yet",
+    st_expResult:"Expected score", st_over25:"Over 2.5 goals", st_btts:"Both to score", st_advance:"Advance —", st_power:"Power (Elo + form)",
+    st_predcorners:"Predicted corners", st_predyellow:"Predicted 🟨 yellow", st_predred:"Predicted 🟥 red",
+    ref_label:"ref:", ref_nodata:"(no data yet)", ref_notnamed:"referee not announced", red_atleastone:"% chance of at least one",
+    topscores:"Most likely scores:", pp_section:"📊 Projected player stats for this match",
+    pp_secnote:"Adjusted for this opponent (more attacking match → more shots; weaker team → more fouls).", pp_secnote_lineup:" Lineups out — starters shown.", pp_secnote_wait:" For teams without matches, projections appear once lineups are out (~1h before kickoff).",
+    sched_empty:"No matches for this filter.",
+    grp_played1:"of", grp_played2:"matches played · 5000 sims of the rest",
+    gh_team:"Team", gh_ptsnow:"Points now", gh_exp:"Expected", gh_1st:"1st", gh_2nd:"2nd", gh_3rd:"3rd",
+    ch_title:"🏅 Predicted bracket", ch_note:"3000 simulations of the rest of the tournament. Each slot shows the most likely team and its chance to reach there; green is the predicted winner.", ch_note2:"group matches played — the bracket updates after each match. Scroll sideways →", ch_banner:"🏆 Predicted winner:", ch_final:"final",
+    r_final:"Final",
+    lb_scorers:"⚽ Top scorers (Golden Boot race)", lb_assists:"🅰️ Assists", lb_shots:"🎯 Most shots", lb_cards:"🟨 Most booked", lb_attack:"🔥 Top-scoring teams", lb_defense:"🛡️ Best defences",
+    lh_goals:"Goals", lh_assists:"Assists", lh_apps:"Matches", lh_shots:"Shots", lh_ontarget:"On tgt", lh_fouls:"Fouls", lh_team:"Team", lh_gpm:"Goals/match", lh_total:"Total", lh_gapm:"Conceded/match", lb_empty:"No matches played yet — leaderboards appear after the first games.",
+    rf_title:"Tournament referees", rf_note:"Stats are from the Mondial 2026 matches each referee officiated.", rfh_ref:"Referee", rfh_country:"Country", rfh_matches:"Matches", rfh_ytotal:"🟨 total", rfh_ypm:"🟨/match", rfh_next:"Next match", rf_empty:"No referees assigned yet.",
+  },
+};
+const t = k => (L[lang][k] !== undefined ? L[lang][k] : (L.bg[k] !== undefined ? L.bg[k] : k));
+const matchesWord = n => lang === "bg" ? (n === 1 ? "мач" : "мача") : (n === 1 ? "match" : "matches");
+
+const name = code => (NAMES[lang][code] || NAMES.bg[code] || code);
+const stageName = s => (STAGES[lang][s] || s);
 const flag = code => code ? `<img src="https://api.fifa.com/api/v3/picture/flags-sq-2/${code}" alt="${code}">` : "";
 const pc = p => (100 * p).toFixed(0) + "%";
 const pc1 = p => (100 * p).toFixed(1) + "%";
 
 // ---- модел (общ със сървъра — всички сметки са в model.js) ----
-// Тук само тънки препратки, които подават текущите данни (DATA) на общия модел.
 const clamp = Model.clamp;
 const compositeLambdas = m => Model.compositeLambdas(DATA, m);
 const predictFromLambdas = Model.predictFromLambdas;
@@ -45,22 +151,43 @@ const predictCorners = (m, lA, lB) => Model.predictCorners(DATA, m, lA, lB);
 
 // текст за все още неопределен отбор (елиминации)
 function phText(ph){
-  if (!ph) return "очаква се";
+  if (!ph) return t("ph_await");
   let m;
-  if ((m = ph.match(/^1([A-L])$/))) return "1-ви от група " + m[1];
-  if ((m = ph.match(/^2([A-L])$/))) return "2-ри от група " + m[1];
-  if ((m = ph.match(/^3([A-L]+)$/))) return "3-ти (" + m[1].split("").join("/") + ")";
-  if ((m = ph.match(/^W(\d+)$/))) return "Победител от мач " + m[1];
-  if ((m = ph.match(/^L(\d+)$/))) return "Загубил от мач " + m[1];
-  if ((m = ph.match(/^([A-L])(\d)$/))) return "Група " + m[1];
+  if ((m = ph.match(/^1([A-L])$/))) return t("ph_1st") + " " + m[1];
+  if ((m = ph.match(/^2([A-L])$/))) return t("ph_2nd") + " " + m[1];
+  if ((m = ph.match(/^3([A-L]+)$/))) return t("ph_3rd") + " (" + m[1].split("").join("/") + ")";
+  if ((m = ph.match(/^W(\d+)$/))) return t("ph_winner") + " " + m[1];
+  if ((m = ph.match(/^L(\d+)$/))) return t("ph_loser") + " " + m[1];
+  if ((m = ph.match(/^([A-L])(\d)$/))) return t("ph_group") + " " + m[1];
   return ph;
 }
+const groupLabel = g => t("ph_group") + " " + g.replace("Group ", "").replace("Група ", "");
 
 // ---- състояние ----
 let DATA = null;
 let activeTab = "schedule";
 let filter = "all";
 const openMatches = new Set();
+
+// ---- интерфейс (преводим): табове, филтри, заглавие, статус ----
+const TABS = [["schedule","📅"],["groups","🏆"],["champion","🏅"],["stats","📊"],["refs","🧑‍⚖️"],["info","ℹ️"]];
+const FILTERS = ["all","today","upcoming","played"];
+function renderChrome(){
+  document.documentElement.lang = lang;
+  document.getElementById("brand").innerHTML = `${t("brandPre")} <span>2026</span>`;
+  document.getElementById("subtitle").textContent = t("subtitle");
+  document.getElementById("footer").innerHTML = `<p>${t("footer1")}</p><p>${t("footer2")}</p><p class="warn">${t("footer3")}</p>`;
+  document.querySelectorAll(".langbtn").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+  document.getElementById("tabs").innerHTML = TABS.map(([id, ic]) => `<button class="tab${id === activeTab ? " active" : ""}" data-tab="${id}"><span class="ic">${ic}</span> ${t("tab_" + id)}</button>`).join("");
+  document.getElementById("filters").innerHTML = FILTERS.map(f => `<button class="chip${f === filter ? " active" : ""}" data-f="${f}">${t("f_" + f)}</button>`).join("");
+}
+function setStatus(){
+  const status = document.getElementById("status");
+  if (!DATA) return;
+  const live = DATA.matches.some(m => m.status === 3);
+  status.innerHTML = t("updated") + ": " + new Date(DATA.updatedAt).toLocaleTimeString(loc()) +
+    " · " + DATA.matches.length + " " + matchesWord(DATA.matches.length) + " · " + (live ? t("liveRefresh") : t("normalRefresh"));
+}
 
 let reloadTimer = null;
 function scheduleNext(){
@@ -70,39 +197,37 @@ function scheduleNext(){
 }
 
 async function load(){
-  const status = document.getElementById("status");
   try {
     const r = await fetch("/api/data");
     DATA = await r.json();
     if (DATA.error) throw new Error(DATA.error);
-    const live = DATA.matches.some(m => m.status === 3);
-    status.innerHTML = "Обновено: " + new Date(DATA.updatedAt).toLocaleTimeString("bg-BG") +
-      " · " + DATA.matches.length + " мача · " + (live ? "🔴 на живо — обновяване на 30 сек" : "обновяване на 5 мин");
+    setStatus();
     renderAccuracy();
     render();
     scheduleNext();
   } catch (e) {
-    status.innerHTML = '<span class="err">Грешка при зареждане (' + e.message + ") — нов опит след 30 сек.</span>";
+    document.getElementById("status").innerHTML = '<span class="err">' + t("loadErr") + " (" + e.message + ") — " + t("retry") + ".</span>";
     clearTimeout(reloadTimer);
     reloadTimer = setTimeout(load, 30e3);
   }
 }
 
-// успеваемост на прогнозите (от сървъра — по завършилите мачове)
 function renderAccuracy(){
   const el = document.getElementById("accuracy");
-  const a = DATA.accuracy;
+  const a = DATA && DATA.accuracy;
   if (!a || !a.outcome.n) { el.innerHTML = ""; return; }
   const pct = o => o.n ? Math.round(100 * o.ok / o.n) : 0;
-  el.innerHTML = `🎯 Успеваемост (${a.outcome.n} ${a.outcome.n === 1 ? "мач" : "мача"}): ` +
-    `<b>изход ${pct(a.outcome)}%</b> · голове ${pct(a.ou)}% · гол-гол ${pct(a.btts)}%`;
+  el.innerHTML = `🎯 ${t("acc")} (${a.outcome.n} ${matchesWord(a.outcome.n)}): ` +
+    `<b>${t("a_outcome")} ${pct(a.outcome)}%</b> · ${t("a_goals")} ${pct(a.ou)}% · ${t("a_btts")} ${pct(a.btts)}%`;
 }
 
 function render(){
-  document.getElementById("filters").style.display = activeTab === "schedule" ? "flex" : "none";
+  const ff = document.getElementById("filters");
+  if (ff) ff.style.display = activeTab === "schedule" ? "flex" : "none";
   const c = document.getElementById("content");
-  if (!DATA) return;
-  if (activeTab === "schedule") c.innerHTML = renderSchedule();
+  if (!DATA && activeTab !== "info") return;
+  if (activeTab === "info") c.innerHTML = renderAbout();
+  else if (activeTab === "schedule") c.innerHTML = renderSchedule();
   else if (activeTab === "groups") c.innerHTML = renderGroups();
   else if (activeTab === "champion") c.innerHTML = renderChampion();
   else if (activeTab === "stats") c.innerHTML = renderLeaderboards();
@@ -123,76 +248,66 @@ function refLine(m){
   const r = DATA.referees[m.referee.id];
   let stats = "";
   if (r && r.matches > 0)
-    stats = ` · ${r.matches} ${r.matches === 1 ? "мач" : "мача"} на турнира · ${(r.y / r.matches).toFixed(1)} жълти/мач · ${r.red} червени`;
-  else stats = " · първи мач на турнира";
+    stats = ` · ${r.matches} ${matchesWord(r.matches)} ${t("ref_at")} · ${(r.y / r.matches).toFixed(1)} ${t("ref_ypg")} · ${r.red} ${t("ref_reds")}`;
+  else stats = " · " + t("ref_first");
   return `<div class="refline">🧑‍⚖️ ${flag(m.referee.country)} ${m.referee.name} (${name(m.referee.country)})${stats}</div>`;
 }
 
-// Множители за прогнозата на играчите в конкретния мач:
-// att = колко атакуващ ще е отборът спрямо обичайното му (мащабира удари/точни удари),
-// foul = аутсайдер-фактор (изоставащият фаулира повече → мащабира нарушения/картони).
 function teamProjMult(code, lam, we, isHome){
-  const t = DATA.teamAgg[code];
-  const avgGoals = (t && t.matches) ? t.gf / t.matches : 1.35;
+  const tt = DATA.teamAgg[code];
+  const avgGoals = (tt && tt.matches) ? tt.gf / tt.matches : 1.35;
   const att = clamp(lam / Math.max(avgGoals, 0.6), 0.65, 1.5);
   const foul = clamp(1 + 0.35 * (isHome ? (1 - 2 * we) : (2 * we - 1)), 0.7, 1.4);
   return { att, foul };
 }
 
-// Типични показатели на мач по позиция (за отбори без статистики, щом излезе съставът).
-// 0 вратар, 1 защитник, 2 полузащитник, 3 нападател.
 const POS_PRIOR = {
-  0: { lbl: "Вр",   shots: 0.0, ot: 0.0,  fouls: 0.1, y: 0.05 },
-  1: { lbl: "Защ",  shots: 0.5, ot: 0.15, fouls: 1.1, y: 0.22 },
-  2: { lbl: "Полу", shots: 1.3, ot: 0.45, fouls: 1.2, y: 0.18 },
-  3: { lbl: "Нап",  shots: 2.4, ot: 1.0,  fouls: 0.7, y: 0.12 },
+  0: { lbl: "pos_gk",  shots: 0.0, ot: 0.0,  fouls: 0.1, y: 0.05 },
+  1: { lbl: "pos_def", shots: 0.5, ot: 0.15, fouls: 1.1, y: 0.22 },
+  2: { lbl: "pos_mid", shots: 1.3, ot: 0.45, fouls: 1.2, y: 0.18 },
+  3: { lbl: "pos_fwd", shots: 2.4, ot: 1.0,  fouls: 0.7, y: 0.12 },
 };
 const yChance = exp => exp > 0.03 ? (100 * (1 - Math.exp(-exp))).toFixed(0) + "%" : "–";
 
-// Прогнозна статистика на играчите за конкретния мач (удари, точни удари, нарушения, шанс за картон).
-// Ред на предимство: 1) реалните данни на играча, ако отборът вече е играл;
-// 2) оценка по позиция от обявения състав; 3) отборна оценка (поне нещо конкретно).
 function playerProjTable(code, mult, lineupSide, lam){
-  const t = DATA.teamAgg[code];
-  if (t && t.matches) {
+  const tt = DATA.teamAgg[code];
+  if (tt && tt.matches) {
     const players = Object.values(DATA.playerAgg)
       .filter(p => p.team === code && (p.shots + p.goals + p.fouls + p.y + p.r + p.saves) > 0)
       .sort((a, b) => (b.shots + b.goals * 2 + b.fouls) - (a.shots + a.goals * 2 + a.fouls))
       .slice(0, 10);
     if (players.length)
-      return `<div class="ptitle">${flag(code)} ${name(code)} — прогноза за мача</div>
-      <table class="ptable"><tr><th>Играч</th><th>Удари</th><th>Точни</th><th>Наруш.</th><th>🟨 шанс</th></tr>
+      return `<div class="ptitle">${flag(code)} ${name(code)} — ${t("pp_forMatch")}</div>
+      <table class="ptable"><tr><th>${t("th_player")}</th><th>${t("th_shots")}</th><th>${t("th_ontarget")}</th><th>${t("th_fouls")}</th><th>${t("th_ycChance")}</th></tr>
       ${players.map(p => `<tr><td>${p.shirt ? p.shirt + ". " : ""}${p.name}${p.saves ? " 🧤" : ""}</td>
         <td>${((p.shots / p.apps) * mult.att).toFixed(1)}</td><td>${((p.onTarget / p.apps) * mult.att).toFixed(1)}</td>
         <td>${((p.fouls / p.apps) * mult.foul).toFixed(1)}</td><td>${yChance((p.y / p.apps) * mult.foul)}</td></tr>`).join("")}
       </table>`;
   }
-  if (lineupSide && lineupSide.some(p => p.starter)) {   // съставът е излязъл — оценка по позиция
+  if (lineupSide && lineupSide.some(p => p.starter)) {
     const starters = lineupSide.filter(p => p.starter)
       .map(p => ({ ...p, pr: POS_PRIOR[p.pos] || POS_PRIOR[2] }))
       .sort((a, b) => b.pr.shots - a.pr.shots);
-    return `<div class="ptitle">${flag(code)} ${name(code)} — прогноза по състав</div>
-    <div class="note">Оценка по позиция (отборът още няма статистики на турнира).</div>
-    <table class="ptable"><tr><th>Играч</th><th></th><th>Удари</th><th>Точни</th><th>Наруш.</th><th>🟨</th></tr>
-    ${starters.map(p => `<tr><td>${p.shirt ? p.shirt + ". " : ""}${p.name}</td><td style="color:var(--faint)">${p.pr.lbl}</td>
+    return `<div class="ptitle">${flag(code)} ${name(code)} — ${t("pp_byLineup")}</div>
+    <div class="note">${t("pp_note_pos")}</div>
+    <table class="ptable"><tr><th>${t("th_player")}</th><th></th><th>${t("th_shots")}</th><th>${t("th_ontarget")}</th><th>${t("th_fouls")}</th><th>🟨</th></tr>
+    ${starters.map(p => `<tr><td>${p.shirt ? p.shirt + ". " : ""}${p.name}</td><td style="color:var(--faint)">${t(p.pr.lbl)}</td>
       <td>${(p.pr.shots * mult.att).toFixed(1)}</td><td>${(p.pr.ot * mult.att).toFixed(1)}</td>
       <td>${(p.pr.fouls * mult.foul).toFixed(1)}</td><td>${yChance(p.pr.y * mult.foul)}</td></tr>`).join("")}
     </table>`;
   }
-  // нито индивидуални данни, нито състав → поне отборна оценка за мача
   const tShots = clamp(4 + (lam || 1.3) * 5, 4, 22);
   const tOnT = tShots * 0.34;
   const tFouls = clamp(11 * mult.foul, 7, 16);
-  return `<div class="ptitle">${flag(code)} ${name(code)} — очаквано за отбора</div>
-  <div class="note">Индивидуалните числа по играч излизат след първия мач на отбора или щом се обяви съставът (~час преди старта).</div>
-  <table class="ptable"><tr><th>Показател</th><th>Прогноза</th></tr>
-    <tr><td>Удари</td><td>~${tShots.toFixed(0)}</td></tr>
-    <tr><td>Точни удари</td><td>~${tOnT.toFixed(0)}</td></tr>
-    <tr><td>Нарушения</td><td>~${tFouls.toFixed(0)}</td></tr>
+  return `<div class="ptitle">${flag(code)} ${name(code)} — ${t("pp_forTeam")}</div>
+  <div class="note">${t("pp_note_team")}</div>
+  <table class="ptable"><tr><th>${t("th_metric")}</th><th>${t("th_pred")}</th></tr>
+    <tr><td>${t("m_shots")}</td><td>~${tShots.toFixed(0)}</td></tr>
+    <tr><td>${t("m_ontarget")}</td><td>~${tOnT.toFixed(0)}</td></tr>
+    <tr><td>${t("m_fouls")}</td><td>~${tFouls.toFixed(0)}</td></tr>
   </table>`;
 }
 
-// детайли за изигран мач: отборна статистика + играчи
 function finishedDetails(m){
   const s = m.stats;
   if (!s) return "";
@@ -200,17 +315,17 @@ function finishedDetails(m){
   if (!h || !a) return "";
   const row = (l, x, y) => (x == null || y == null) ? "" : `<tr><td>${x}</td><th>${l}</th><td>${y}</td></tr>`;
   const cmp = `<table class="cmptable">
-    ${row("Притежание %", h.possession, a.possession)}
-    ${row("Удари", h.shots, a.shots)}
-    ${row("Точни удари", h.onTarget, a.onTarget)}
-    ${row("Корнери", h.corners, a.corners)}
-    ${row("Нарушения", h.fouls, a.fouls)}
-    ${row("Засади", h.offsides, a.offsides)}
-    ${row("Точни пасове %", h.passPct, a.passPct)}
-    ${row("Отнемания", h.tacklesEff != null ? h.tacklesEff + "/" + h.tacklesTot : null, a.tacklesEff != null ? a.tacklesEff + "/" + a.tacklesTot : null)}
-    ${row("Пресечени топки", h.interceptions, a.interceptions)}
-    ${row("Жълти картони", h.y, a.y)}
-    ${row("Червени картони", h.r, a.r)}
+    ${row(t("st_possession"), h.possession, a.possession)}
+    ${row(t("m_shots"), h.shots, a.shots)}
+    ${row(t("m_ontarget"), h.onTarget, a.onTarget)}
+    ${row(t("st_corners"), h.corners, a.corners)}
+    ${row(t("m_fouls"), h.fouls, a.fouls)}
+    ${row(t("st_offsides"), h.offsides, a.offsides)}
+    ${row(t("st_passpct"), h.passPct, a.passPct)}
+    ${row(t("st_tackles"), h.tacklesEff != null ? h.tacklesEff + "/" + h.tacklesTot : null, a.tacklesEff != null ? a.tacklesEff + "/" + a.tacklesTot : null)}
+    ${row(t("st_interceptions"), h.interceptions, a.interceptions)}
+    ${row(t("st_yellow"), h.y, a.y)}
+    ${row(t("st_red"), h.r, a.r)}
   </table>`;
   const players = Object.values(s.players)
     .filter(p => (p.shots + p.goals + p.assists + p.fouls + p.foulsSuffered + p.y + p.r + p.saves) > 0)
@@ -218,8 +333,8 @@ function finishedDetails(m){
       ? (y.shots + y.goals * 2 + y.fouls) - (x.shots + x.goals * 2 + x.fouls)
       : (x.team === m.home.code ? -1 : 1));
   const ptable = players.length ? `
-  <div class="ptitle">Играчите в мача</div>
-  <table class="ptable"><tr><th>Играч</th><th></th><th>Удари</th><th>Точни</th><th>Голове</th><th>Асист.</th><th>Наруш.</th><th>Пострадал</th><th>Картони</th></tr>
+  <div class="ptitle">${t("pl_inMatch")}</div>
+  <table class="ptable"><tr><th>${t("th_player")}</th><th></th><th>${t("th_shots")}</th><th>${t("th_ontarget")}</th><th>${t("th_goals")}</th><th>${t("th_assists")}</th><th>${t("th_fouls")}</th><th>${t("th_suffered")}</th><th>${t("th_cards")}</th></tr>
   ${players.map(p => `<tr><td>${p.shirt ? p.shirt + ". " : ""}${p.name}${p.saves ? " 🧤" + p.saves : ""}</td><td>${flag(p.team)}</td>
     <td>${p.shots}</td><td>${p.onTarget || 0}</td><td>${p.goals}</td><td>${p.assists || 0}</td><td>${p.fouls}</td><td>${p.foulsSuffered || 0}</td>
     <td>${"🟨".repeat(p.y)}${"🟥".repeat(p.r)}</td></tr>`).join("")}
@@ -227,42 +342,38 @@ function finishedDetails(m){
   return `<div class="details">${cmp}${ptable}</div>`;
 }
 
-// Обобщена "примерна прогноза за мача" — на едно място, на разбираем език.
 function matchVerdict(m, r, p1, px, p2, cards, corners, ko){
   const A = name(m.home.code), B = name(m.away.code);
   let outcome, op;
-  if (p1 >= px && p1 >= p2) { outcome = A + " печели"; op = p1; }
-  else if (p2 >= px && p2 >= p1) { outcome = B + " печели"; op = p2; }
-  else { outcome = "Равенство"; op = px; }
-  const conf = op > 0.60 ? "ясен фаворит" : op > 0.45 ? "лек превес" : "оспорван мач";
+  if (p1 >= px && p1 >= p2) { outcome = A + " " + t("v_wins"); op = p1; }
+  else if (p2 >= px && p2 >= p1) { outcome = B + " " + t("v_wins"); op = p2; }
+  else { outcome = t("v_draw"); op = px; }
+  const conf = op > 0.60 ? t("conf_clear") : op > 0.45 ? t("conf_slight") : t("conf_open");
   const over = r.over25;
-  const overTxt = over >= 0.5 ? `Над 2.5 (${pc(over)})` : `Под 2.5 (${pc(1 - over)})`;
-  const bttsTxt = r.btts >= 0.5 ? `Да (${pc(r.btts)})` : `Не (${pc(1 - r.btts)})`;
+  const overTxt = over >= 0.5 ? `${t("over")} (${pc(over)})` : `${t("under")} (${pc(1 - over)})`;
+  const bttsTxt = r.btts >= 0.5 ? `${t("yes")} (${pc(r.btts)})` : `${t("no")} (${pc(1 - r.btts)})`;
   const ts = r.top[0];
-  const badge = m.lineup ? `<span class="vbadge">✅ съставите излязоха</span>` : "";
+  const badge = m.lineup ? `<span class="vbadge">${t("v_lineupOut")}</span>` : "";
   const row = (ic, l, v, sub) => `<div class="vrow"><span>${ic} ${l}</span><b>${v}${sub ? ` <span class="vsub">${sub}</span>` : ""}</b></div>`;
   return `<div class="verdict">
-    <div class="verdict-head">📋 Примерна прогноза за мача ${badge}</div>
-    ${row("🏆", "Изход", `${outcome} · ${pc(op)}`, conf)}
-    ${row("⚽", "Резултат", `${ts.i} : ${ts.j}`, `очаквани голове ${r.lA.toFixed(1)} : ${r.lB.toFixed(1)}`)}
-    ${row("📈", "Голове", overTxt, "")}
-    ${row("🥅", "Гол-гол", bttsTxt, "и двата да бележат")}
-    ${row("🟨", "Картони", `~${cards.y.toFixed(1)} жълти`, `~${cards.r.toFixed(2)} червени`)}
-    ${row("⛳", "Корнери", `~${corners.total.toFixed(1)}`, `${A} ${corners.a.toFixed(1)} · ${B} ${corners.b.toFixed(1)}`)}
+    <div class="verdict-head">📋 ${t("v_title")} ${badge}</div>
+    ${row("🏆", t("v_outcome"), `${outcome} · ${pc(op)}`, conf)}
+    ${row("⚽", t("v_result"), `${ts.i} : ${ts.j}`, `${t("v_expGoals")} ${r.lA.toFixed(1)} : ${r.lB.toFixed(1)}`)}
+    ${row("📈", t("v_goals"), overTxt, "")}
+    ${row("🥅", t("v_btts"), bttsTxt, t("v_btts_sub"))}
+    ${row("🟨", t("v_cards"), `~${cards.y.toFixed(1)} ${t("lbl_yellow")}`, `~${cards.r.toFixed(2)} ${t("lbl_red")}`)}
+    ${row("⛳", t("v_corners"), `~${corners.total.toFixed(1)}`, `${A} ${corners.a.toFixed(1)} · ${B} ${corners.b.toFixed(1)}`)}
   </div>`;
 }
 
-// Акценти по играчи: най-вероятен стрелец и най-вероятен картон (от двата отбора).
 function playerHighlights(m, mh, ma){
   const pool = [];
   const add = (code, mult, lineupSide) => {
-    const t = DATA.teamAgg[code];
-    if (t && t.matches) {
+    const tt = DATA.teamAgg[code];
+    if (tt && tt.matches) {
       Object.values(DATA.playerAgg)
         .filter(p => p.team === code && (p.shots + p.fouls + p.y) > 0)
-        .forEach(p => pool.push({ name: p.name, team: code,
-          shots: (p.shots / p.apps) * mult.att,
-          cardCh: 1 - Math.exp(-(p.y / p.apps) * mult.foul) }));
+        .forEach(p => pool.push({ name: p.name, team: code, shots: (p.shots / p.apps) * mult.att, cardCh: 1 - Math.exp(-(p.y / p.apps) * mult.foul) }));
     } else if (lineupSide && lineupSide.some(p => p.starter)) {
       lineupSide.filter(p => p.starter).forEach(p => {
         const pr = POS_PRIOR[p.pos] || POS_PRIOR[2];
@@ -275,12 +386,11 @@ function playerHighlights(m, mh, ma){
   if (!pool.length) return "";
   const shot = pool.slice().sort((a, b) => b.shots - a.shots)[0];
   const card = pool.slice().sort((a, b) => b.cardCh - a.cardCh)[0];
-  return `<div class="phl">🎯 <b>Акценти по играчи:</b> ` +
-    `най-много удари — ${flag(shot.team)} ${shot.name} (~${shot.shots.toFixed(1)}) · ` +
-    `най-вероятен картон — ${flag(card.team)} ${card.name} (${(card.cardCh * 100).toFixed(0)}%)</div>`;
+  return `<div class="phl">🎯 <b>${t("phl_title")}</b> ` +
+    `${t("phl_shots")} — ${flag(shot.team)} ${shot.name} (~${shot.shots.toFixed(1)}) · ` +
+    `${t("phl_card")} — ${flag(card.team)} ${card.name} (${(card.cardCh * 100).toFixed(0)}%)</div>`;
 }
 
-// Жива вероятност за изхода: текущ резултат + очаквани голове за оставащото време.
 function liveProb(hs, as, rlA, rlB){
   let p1 = 0, px = 0, p2 = 0;
   for (let i = 0; i <= 8; i++) for (let j = 0; j <= 8; j++) {
@@ -291,71 +401,68 @@ function liveProb(hs, as, rlA, rlB){
   return { p1, px, p2 };
 }
 
-// Статистика на живо (расте по време на мача).
 function liveStatsHtml(m){
   if (!m.liveStats) return "";
   const h = m.liveStats[m.home.code], a = m.liveStats[m.away.code];
   if (!h || !a) return "";
-  const bar = (x, y) => { const t = x + y || 1; return `<span class="lsbar"><i style="width:${x / t * 100}%"></i></span>`; };
+  const bar = (x, y) => { const tot = x + y || 1; return `<span class="lsbar"><i style="width:${x / tot * 100}%"></i></span>`; };
   const row = (l, x, y, dx, dy) => `<div class="lsrow"><b>${dx != null ? dx : x}</b><span class="lsl">${l}</span><b>${dy != null ? dy : y}</b></div>${bar(x, y)}`;
-  const cards = (h.y + a.y + h.r + a.r) > 0 ? row("Картони 🟨🟥", h.y + h.r, a.y + a.r) : "";
+  const cards = (h.y + a.y + h.r + a.r) > 0 ? row(t("ls_cards"), h.y + h.r, a.y + a.r) : "";
   const poss = (h.possession != null && a.possession != null)
-    ? row("Притежание", h.possession, a.possession, Math.round(h.possession) + "%", Math.round(a.possession) + "%") : "";
+    ? row(t("ls_possession"), h.possession, a.possession, Math.round(h.possession) + "%", Math.round(a.possession) + "%") : "";
   return `<div class="livestats">
     ${poss}
-    ${row("Удари", h.shots, a.shots)}
-    ${row("Точни удари", h.onTarget, a.onTarget)}
-    ${row("Корнери", h.corners, a.corners)}
-    ${row("Нарушения", h.fouls, a.fouls)}
+    ${row(t("m_shots"), h.shots, a.shots)}
+    ${row(t("m_ontarget"), h.onTarget, a.onTarget)}
+    ${row(t("st_corners"), h.corners, a.corners)}
+    ${row(t("m_fouls"), h.fouls, a.fouls)}
     ${cards}
   </div>`;
 }
 
-// Статистика по играч на живо (голове, удари, нарушения, картони).
 function livePlayersHtml(m){
   if (!m.livePlayers) return "";
+  const shotW = n => lang === "bg" ? (n > 1 ? "удара" : "удар") : (n > 1 ? "shots" : "shot");
   const side = code => {
     const list = (m.livePlayers[code] || []).slice(0, 6);
-    if (!list.length) return `<div class="lpcol"><div class="lpt">${flag(code)} ${name(code)}</div><div class="note">още няма действия</div></div>`;
+    if (!list.length) return `<div class="lpcol"><div class="lpt">${flag(code)} ${name(code)}</div><div class="note">${t("lp_none")}</div></div>`;
     return `<div class="lpcol"><div class="lpt">${flag(code)} ${name(code)}</div>${list.map(p => {
       const tags = [
         p.goals ? "⚽".repeat(p.goals) : "",
-        p.shots ? `${p.shots} удар${p.shots > 1 ? "а" : ""}` : "",
-        p.fouls ? `${p.fouls} наруш.` : "",
+        p.shots ? `${p.shots} ${shotW(p.shots)}` : "",
+        p.fouls ? `${p.fouls} ${t("lp_fouls")}` : "",
         "🟨".repeat(p.y) + "🟥".repeat(p.r),
       ].filter(Boolean).join(" · ");
       return `<div class="lprow"><span class="lpn">${p.shirt ? p.shirt + ". " : ""}${p.name}</span><span class="lpv">${tags}</span></div>`;
     }).join("")}</div>`;
   };
-  return `<div class="lptitle">Играчи на живо</div><div class="liveplayers">${side(m.home.code)}${side(m.away.code)}</div>`;
+  return `<div class="lptitle">${t("lp_title")}</div><div class="liveplayers">${side(m.home.code)}${side(m.away.code)}</div>`;
 }
 
-// История на преките срещи (H2H).
 function h2hLine(m){
   if (!m.h2h) return "";
   const h = m.h2h;
   const games = h.meetings.map(g => `<span class="h2hg">${new Date(g.date).getFullYear()}: ${g.a}–${g.b}</span>`).join("");
   return `<div class="h2h">
-    <div class="h2h-head">🤝 Преки срещи (последни ${h.n})</div>
-    <div class="h2h-sum">${flag(h.aCode)} ${name(h.aCode)} <b>${h.aW}</b> · ${h.dr} равни · <b>${h.bW}</b> ${name(h.bCode)} ${flag(h.bCode)}</div>
+    <div class="h2h-head">🤝 ${t("h2h_title")} ${h.n})</div>
+    <div class="h2h-sum">${flag(h.aCode)} ${name(h.aCode)} <b>${h.aW}</b> · ${h.dr} ${t("h2h_draws")} · <b>${h.bW}</b> ${name(h.bCode)} ${flag(h.bCode)}</div>
     <div class="h2h-games">${games}</div>
   </div>`;
 }
 
-// Кой ще отбележи: шанс всеки играч да вкара поне веднъж в мача.
 function topScorers(m, mh, ma){
   const pool = [];
   const add = (code, mult, lineupSide) => {
-    const t = DATA.teamAgg[code];
-    if (t && t.matches) {
+    const tt = DATA.teamAgg[code];
+    if (tt && tt.matches) {
       Object.values(DATA.playerAgg).filter(p => p.team === code).forEach(p => {
-        const raw = Math.max(p.goals / p.apps, (p.shots / p.apps) * 0.10);    // голове/мач или ~10% от ударите
-        const rate = raw * (p.apps / (p.apps + 1.5));                          // придърпване при малко мачове
+        const raw = Math.max(p.goals / p.apps, (p.shots / p.apps) * 0.10);
+        const rate = raw * (p.apps / (p.apps + 1.5));
         const lam = rate * mult.att;
         if (lam > 0.03) pool.push({ name: p.name, shirt: p.shirt, team: code, p: 1 - Math.exp(-lam) });
       });
     } else if (lineupSide && lineupSide.some(p => p.starter)) {
-      const GR = { 0: 0.005, 1: 0.06, 2: 0.18, 3: 0.45 };   // голов рейтинг по позиция
+      const GR = { 0: 0.005, 1: 0.06, 2: 0.18, 3: 0.45 };
       lineupSide.filter(p => p.starter).forEach(p => {
         const lam = (GR[p.pos] != null ? GR[p.pos] : 0.15) * mult.att;
         pool.push({ name: p.name, shirt: p.shirt, team: code, p: 1 - Math.exp(-lam) });
@@ -366,61 +473,54 @@ function topScorers(m, mh, ma){
   add(m.away.code, ma, m.lineup ? m.lineup.away : null);
   if (!pool.length) return "";
   const top = pool.sort((a, b) => b.p - a.p).slice(0, 5);
-  return `<div class="ptitle" style="margin-top:14px">⚽ Кой ще отбележи (шанс за гол в мача)</div>
+  return `<div class="ptitle" style="margin-top:14px">${t("ts_title")}</div>
     <div class="scorers">${top.map(p => `<div class="scorer"><span>${flag(p.team)} ${p.shirt ? p.shirt + ". " : ""}${p.name}</span><b>${(p.p * 100).toFixed(0)}%</b></div>`).join("")}</div>`;
 }
 
-// Резултат на прогнозата след завършил мач (позна ли — ✅/❌).
 function predResultLine(m){
   if (!m.predEval || !m.prediction) return "";
   const e = m.predEval, P = m.prediction;
   const A = name(m.home.code), B = name(m.away.code);
-  const pickName = o => o === "1" ? A : o === "2" ? B : "равен";
+  const pickName = o => o === "1" ? A : o === "2" ? B : t("draw_l");
   const mk = ok => ok ? '<span class="hit">✅</span>' : '<span class="miss">❌</span>';
   const hits = [e.outcome.ok, e.ou.ok, e.btts.ok].filter(Boolean).length;
   return `<div class="predres">
-    <div class="predres-head">📋 Прогнозата позна ${hits}/3 ${surpriseBadge(m)}</div>
+    <div class="predres-head">📋 ${t("pr_hit")} ${hits}/3 ${surpriseBadge(m)}</div>
     <div class="predres-rows">
-      <span>${mk(e.outcome.ok)} Изход: ${pickName(P.outcome)}</span>
-      <span>${mk(e.ou.ok)} Голове: ${P.ouPick === "over" ? "над 2.5" : "под 2.5"}</span>
-      <span>${mk(e.btts.ok)} Гол-гол: ${P.bttsPick === "yes" ? "да" : "не"}</span>
+      <span>${mk(e.outcome.ok)} ${t("v_outcome")}: ${pickName(P.outcome)}</span>
+      <span>${mk(e.ou.ok)} ${t("v_goals")}: ${P.ouPick === "over" ? t("over25") : t("under25")}</span>
+      <span>${mk(e.btts.ok)} ${t("v_btts")}: ${P.bttsPick === "yes" ? t("yes_l") : t("no_l")}</span>
     </div>
   </div>`;
 }
 
-// Изненада-индекс: колко малка вероятност моделът даваше на това, което реално стана.
 function surpriseBadge(m){
   if (!m.prediction || !m.predEval) return "";
   const P = m.prediction, act = m.predEval.outcome.actual;
   const probActual = act === "1" ? P.p1 : act === "2" ? P.p2 : P.px;
-  if (probActual >= 0.5) return "";                    // очакван изход
-  if (probActual >= 0.33) return `<span class="surprise s1">🙂 леко изненадващо</span>`;
-  if (probActual >= 0.18) return `<span class="surprise s2">😮 изненада</span>`;
-  return `<span class="surprise s3">🤯 голяма изненада</span>`;
+  if (probActual >= 0.5) return "";
+  if (probActual >= 0.33) return `<span class="surprise s1">${t("sp_mild")}</span>`;
+  if (probActual >= 0.18) return `<span class="surprise s2">${t("sp_surprise")}</span>`;
+  return `<span class="surprise s3">${t("sp_big")}</span>`;
 }
 
-// Маркер "рисков фаворит": ясен, но не смазващ фаворит срещу съперник, който може да накаже.
 function riskyFavBadge(homeWin, awayWin, lHome, lAway){
   const favWin = Math.max(homeWin, awayWin);
-  const underdogL = homeWin >= awayWin ? lAway : lHome;   // очаквани голове на аутсайдера
+  const underdogL = homeWin >= awayWin ? lAway : lHome;
   if (favWin >= 0.58 && favWin <= 0.82 && underdogL >= 0.85)
-    return `<span class="riskyfav">⚠️ рисков фаворит</span>`;
+    return `<span class="riskyfav">${t("rf")}</span>`;
   return "";
 }
 
 function renderMatch(m){
-  const time = new Date(m.date).toLocaleTimeString("bg-BG", { hour: "2-digit", minute: "2-digit" });
-  const stage = m.group ? m.group.replace("Group", "Група") : (STAGE_BG[m.stageName] || m.stageName);
+  const time = new Date(m.date).toLocaleTimeString(loc(), { hour: "2-digit", minute: "2-digit" });
+  const stage = m.group ? groupLabel(m.group) : stageName(m.stageName);
   const place = [m.stadium, m.city].filter(Boolean).join(", ");
   const live = m.status === 3;
   const finished = m.status === 0;
 
-  const homeHtml = m.home
-    ? `<span>${name(m.home.code)}</span> ${flag(m.home.code)}`
-    : `<span class="ph">${phText(m.phA)}</span>`;
-  const awayHtml = m.away
-    ? `${flag(m.away.code)} <span>${name(m.away.code)}</span>`
-    : `<span class="ph">${phText(m.phB)}</span>`;
+  const homeHtml = m.home ? `<span>${name(m.home.code)}</span> ${flag(m.home.code)}` : `<span class="ph">${phText(m.phA)}</span>`;
+  const awayHtml = m.away ? `${flag(m.away.code)} <span>${name(m.away.code)}</span>` : `<span class="ph">${phText(m.phB)}</span>`;
 
   let mid, bar = "", details = "", cardsline = "", headBadge = "", liveLine = "";
   const canPredict = m.home && m.away && !finished;
@@ -429,31 +529,30 @@ function renderMatch(m){
   if (finished || live) {
     let s = (m.hs ?? "–") + " : " + (m.as ?? "–");
     let cls = "score";
-    if (m.hp != null && m.ap != null && (m.hp || m.ap)) { s += ` (${m.hp}:${m.ap} дузпи)`; cls += " pen"; }
+    if (m.hp != null && m.ap != null && (m.hp || m.ap)) { s += ` (${m.hp}:${m.ap} ${t("pens")})`; cls += " pen"; }
     mid = `<div class="${cls}">${s}</div>`;
     if (finished && m.stats) {
       const h = m.stats.teams[m.home.code], a = m.stats.teams[m.away.code];
       if (h && a && (h.y + a.y + h.r + a.r) > 0)
-        cardsline = `<div class="cardsline">🟨 ${h.y + a.y} жълти${(h.r + a.r) ? " · 🟥 " + (h.r + a.r) + " червени" : ""} · ⛳ ${h.corners + a.corners} корнера</div>`;
+        cardsline = `<div class="cardsline">🟨 ${h.y + a.y} ${t("lbl_yellow")}${(h.r + a.r) ? " · 🟥 " + (h.r + a.r) + " " + t("lbl_red") : ""} · ⛳ ${h.corners + a.corners} ${t("corners_w")}</div>`;
       details = finishedDetails(m);
     }
   } else {
-    mid = `<div class="vsmini">${time} ч.</div>`;
+    mid = `<div class="vsmini">${time}${t("time_suffix")}</div>`;
   }
 
   if (canPredict) {
     const comp = compositeLambdas(m);
-    const eA = comp.A.e, eB = comp.B.e;
     const r = predictFromLambdas(comp.lA, comp.lB);
     const ko = m.stageName !== "First Stage";
     let p1 = r.p1, px = r.px, p2 = r.p2;
     if (ko) { const sh = 0.5 + (r.we - 0.5) * 0.6; p1 += px * sh; p2 += px * (1 - sh); px = 0; }
-    if (live) {   // жива вероятност според текущия резултат и оставащото време
+    if (live) {
       const ml = Math.max(0, 92 - (m.minute || 0));
       const lp = liveProb(m.hs || 0, m.as || 0, comp.lA * ml / 90, comp.lB * ml / 90);
       p1 = lp.p1; px = lp.px; p2 = lp.p2;
       const evs = (m.liveEvents || []).slice(0, 6).map(e => `<span class="lev">${e.min} ${e.kind}${e.team ? " " + flag(e.team) : ""}</span>`).join("");
-      liveLine = `<div class="livebox"><div class="livehdr">🔴 На живо ${m.matchTime || ""} · вероятност за победа сега</div>` +
+      liveLine = `<div class="livebox"><div class="livehdr">🔴 ${t("live_now").replace("● ", "")} ${m.matchTime || ""} · ${t("live_winprob")}</div>` +
         `${evs ? `<div class="levs">${evs}</div>` : ""}${liveStatsHtml(m)}${livePlayersHtml(m)}</div>`;
     }
     bar = `<div class="pbar">
@@ -468,34 +567,34 @@ function renderMatch(m){
     const mhMult = teamProjMult(m.home.code, comp.lA, r.we, true);
     const maMult = teamProjMult(m.away.code, comp.lB, r.we, false);
     const tm = (DATA.teamAgg[m.home.code]?.matches || 0) + (DATA.teamAgg[m.away.code]?.matches || 0);
-    const srcNote = `<div class="srcnote">⚙️ Прогнозата комбинира: <b>Elo</b> + <b>голов профил</b> (eloratings)` +
-      (tm ? ` + <b>статистики</b> от ${tm} ${tm === 1 ? "изигран мач" : "изиграни мача"} (голове, владение, удари — FIFA &amp; ESPN)` : " · тези отбори още нямат мачове на турнира") + `</div>`;
+    const srcNote = `<div class="srcnote">⚙️ ${t("src_combines")} <b>Elo</b> + <b>${t("src_goalprofile")}</b> (eloratings)` +
+      (tm ? ` + <b>${t("src_stats")}</b> ${t("src_from")} ${tm} ${matchesWord(tm)} ${t("src_statdetail")}` : " · " + t("src_noMatches")) + `</div>`;
     const bonusTxt = b => b ? ` <span style="color:${b > 0 ? "var(--green)" : "var(--red)"}">${b > 0 ? "+" : ""}${b}</span>` : "";
     details = `<div class="details">
       ${matchVerdict(m, r, p1, px, p2, cards, corners, ko)}
       ${h2hLine(m)}
       ${srcNote}
       <div class="stats">
-        <div class="stat"><div class="l">Очакван резултат</div><div class="v">${r.lA.toFixed(1)} : ${r.lB.toFixed(1)}</div></div>
-        <div class="stat"><div class="l">Над 2.5 гола</div><div class="v">${pc1(r.over25)}</div></div>
-        <div class="stat"><div class="l">Двата бележат</div><div class="v">${pc1(r.btts)}</div></div>
-        ${ko ? `<div class="stat"><div class="l">Класиране — ${name(m.home.code)}</div><div class="v">${pc1(p1)}</div></div>` : ""}
-        <div class="stat"><div class="l">Сила (Elo + форма)</div><div class="v" style="font-size:.86rem">${comp.A.base}${bonusTxt(comp.A.bonus)} : ${comp.B.base}${bonusTxt(comp.B.bonus)}</div></div>
+        <div class="stat"><div class="l">${t("st_expResult")}</div><div class="v">${r.lA.toFixed(1)} : ${r.lB.toFixed(1)}</div></div>
+        <div class="stat"><div class="l">${t("st_over25")}</div><div class="v">${pc1(r.over25)}</div></div>
+        <div class="stat"><div class="l">${t("st_btts")}</div><div class="v">${pc1(r.btts)}</div></div>
+        ${ko ? `<div class="stat"><div class="l">${t("st_advance")} ${name(m.home.code)}</div><div class="v">${pc1(p1)}</div></div>` : ""}
+        <div class="stat"><div class="l">${t("st_power")}</div><div class="v" style="font-size:.86rem">${comp.A.base}${bonusTxt(comp.A.bonus)} : ${comp.B.base}${bonusTxt(comp.B.bonus)}</div></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="l">Прогноза корнери</div><div class="v">~${corners.total.toFixed(1)}</div>
+        <div class="stat"><div class="l">${t("st_predcorners")}</div><div class="v">~${corners.total.toFixed(1)}</div>
           <div class="l">${name(m.home.code)} ${corners.a.toFixed(1)} · ${name(m.away.code)} ${corners.b.toFixed(1)}</div></div>
-        <div class="stat"><div class="l">Прогноза 🟨 жълти</div><div class="v">~${cards.y.toFixed(1)}</div>
+        <div class="stat"><div class="l">${t("st_predyellow")}</div><div class="v">~${cards.y.toFixed(1)}</div>
           <div class="l">${name(m.home.code)} ${cards.yHome.toFixed(1)} · ${name(m.away.code)} ${cards.yAway.toFixed(1)}</div>
-          <div class="l" style="margin-top:3px; opacity:.75">${m.referee ? "съдия: " + m.referee.name + (cards.hasRef ? "" : " (още няма данни)") : "съдията не е обявен"}</div></div>
-        <div class="stat"><div class="l">Прогноза 🟥 червени</div><div class="v">~${cards.r.toFixed(2)}</div>
-          <div class="l">${((1 - Math.exp(-cards.r)) * 100).toFixed(0)}% шанс за поне един</div></div>
+          <div class="l" style="margin-top:3px; opacity:.75">${m.referee ? t("ref_label") + " " + m.referee.name + (cards.hasRef ? "" : " " + t("ref_nodata")) : t("ref_notnamed")}</div></div>
+        <div class="stat"><div class="l">${t("st_predred")}</div><div class="v">~${cards.r.toFixed(2)}</div>
+          <div class="l">${((1 - Math.exp(-cards.r)) * 100).toFixed(0)}${t("red_atleastone")}</div></div>
       </div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Най-вероятни резултати:</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">${t("topscores")}</div>
       ${r.top.map(s => `<div class="scorerow"><div class="sc">${s.i} : ${s.j}</div>
         <div class="fill" style="width:${s.p / maxP * 45}%"></div><div class="pc">${pc1(s.p)}</div></div>`).join("")}
-      <div class="ptitle" style="margin-top:16px">📊 Прогнозна статистика на играчите за този мач</div>
-      <div class="note" style="margin-bottom:4px">Нагласено за този съперник (по-атакуващ мач → повече удари; по-слабият отбор → повече нарушения).${m.lineup ? " Съставите излязоха — показани са титулярите." : " За отбори без изиграни мачове прогнозата излиза щом съставите се обявят (~час преди старта)."}</div>
+      <div class="ptitle" style="margin-top:16px">${t("pp_section")}</div>
+      <div class="note" style="margin-bottom:4px">${t("pp_secnote")}${m.lineup ? t("pp_secnote_lineup") : t("pp_secnote_wait")}</div>
       ${playerHighlights(m, mhMult, maMult)}
       ${topScorers(m, mhMult, maMult)}
       <div class="cols2">
@@ -507,7 +606,7 @@ function renderMatch(m){
 
   return `<div class="match ${openMatches.has(m.id) ? "open" : ""}" onclick="toggleMatch('${m.id}')">
     <div class="mhead">
-      <span>${live ? '<span class="live">● НА ЖИВО</span> · ' : ""}${stage} · мач №${m.matchNumber || "?"} ${headBadge}</span>
+      <span>${live ? `<span class="live">${t("live_now")}</span> · ` : ""}${stage} · ${t("m_no")}${m.matchNumber || "?"} ${headBadge}</span>
       <span>${place}</span>
     </div>
     <div class="mrow">
@@ -519,10 +618,10 @@ function renderMatch(m){
 
 function renderSchedule(){
   const ms = DATA.matches.filter(matchPassesFilter);
-  if (!ms.length) return '<div class="loading">Няма мачове за този филтър.</div>';
+  if (!ms.length) return `<div class="loading">${t("sched_empty")}</div>`;
   let html = "", lastDay = "";
   for (const m of ms) {
-    const day = new Date(m.date).toLocaleDateString("bg-BG", { weekday: "long", day: "numeric", month: "long" });
+    const day = new Date(m.date).toLocaleDateString(loc(), { weekday: "long", day: "numeric", month: "long" });
     if (day !== lastDay) { html += `<div class="dayhead">${day}</div>`; lastDay = day; }
     html += renderMatch(m);
   }
@@ -534,10 +633,10 @@ function toggleMatch(id){
   render();
 }
 
-// ---- групи: реални точки + симулация на оставащите мачове ----
+// ---- групи ----
 function samplePois(l){
-  const L = Math.exp(-l); let k = 0, p = 1;
-  do { k++; p *= Math.random(); } while (p > L);
+  const L0 = Math.exp(-l); let k = 0, p = 1;
+  do { k++; p *= Math.random(); } while (p > L0);
   return k - 1;
 }
 
@@ -564,10 +663,10 @@ function simGroup(groupMatches){
       gd[i] += gi - gj; gd[j] += gj - gi; gf[i] += gi; gf[j] += gj;
       if (gi > gj) pts[i] += 3; else if (gi < gj) pts[j] += 3; else { pts[i]++; pts[j]++; }
     }
-    const order = codes.map((_, t) => t).sort((a, b) =>
+    const order = codes.map((_, t2) => t2).sort((a, b) =>
       pts[b] - pts[a] || gd[b] - gd[a] || gf[b] - gf[a] || Math.random() - 0.5);
-    order.forEach((t, pos) => agg[t].pos[pos]++);
-    codes.forEach((_, t) => agg[t].pts += pts[t]);
+    order.forEach((t2, pos) => agg[t2].pos[pos]++);
+    codes.forEach((_, t2) => agg[t2].pts += pts[t2]);
   }
   return codes.map((c, i) => ({
     code: c, now: basePts[i], pts: agg[i].pts / N,
@@ -585,9 +684,9 @@ function renderGroups(){
     const rows = simGroup(groups[g]);
     const played = groups[g].filter(m => m.status === 0).length;
     return `<div class="gcard">
-      <h3>${g.replace("Group", "Група")}</h3>
-      <div class="note">${played} от ${groups[g].length} мача изиграни · 5000 симулации на оставащите</div>
-      <table><tr><th>Отбор</th><th>Elo</th><th>Точки сега</th><th>Очаквани</th><th>1-во</th><th>2-ро</th><th>3-то</th></tr>
+      <h3>${groupLabel(g)}</h3>
+      <div class="note">${played} ${t("grp_played1")} ${groups[g].length} ${t("grp_played2")}</div>
+      <table><tr><th>${t("gh_team")}</th><th>Elo</th><th>${t("gh_ptsnow")}</th><th>${t("gh_exp")}</th><th>${t("gh_1st")}</th><th>${t("gh_2nd")}</th><th>${t("gh_3rd")}</th></tr>
       ${rows.map((r, i) => `<tr class="${i === 0 ? "q1" : i === 1 ? "q2" : ""}">
         <td><div class="teamcell">${flag(r.code)} ${name(r.code)}</div></td>
         <td>${DATA.elo[r.code] || "?"}</td><td>${r.now}</td><td><b>${r.pts.toFixed(1)}</b></td>
@@ -596,7 +695,7 @@ function renderGroups(){
   }).join("");
 }
 
-// ---- Прогноза за целия турнир (Монте Карло на остатъка) ----
+// ---- Прогноза за целия турнир (Монте Карло) ----
 let champCache = null, champKey = null;
 
 function simulateTournament(N){
@@ -605,7 +704,6 @@ function simulateTournament(N){
   for (const code of allCodes) power[code] = Model.powerElo(DATA, { code }, {}).e;
   const koWin = (a, b) => Math.random() < Model.winExp(power[a] - power[b]) ? a : b;
 
-  // групи + предварително изчислени лямбди за неизиграните групови мачове
   const groups = {};
   const teamGroup = {};
   const lamCache = {};
@@ -616,11 +714,8 @@ function simulateTournament(N){
     teamGroup[m.home.code] = g; teamGroup[m.away.code] = g;
     if (m.status !== 0) { const c = compositeLambdas(m); lamCache[m.id] = [c.lA, c.lB]; }
   }
-  const ko = DATA.matches
-    .filter(m => m.stageName && m.stageName !== "First Stage")
-    .sort((a, b) => (a.matchNumber || 0) - (b.matchNumber || 0));
-  const thirdSlots = [...new Set(ko.filter(m => m.stageName === "Round of 32")
-    .flatMap(m => [m.phA, m.phB]).filter(ph => /^3[A-L]{2,}$/.test(ph)))];
+  const ko = DATA.matches.filter(m => m.stageName && m.stageName !== "First Stage").sort((a, b) => (a.matchNumber || 0) - (b.matchNumber || 0));
+  const thirdSlots = [...new Set(ko.filter(m => m.stageName === "Round of 32").flatMap(m => [m.phA, m.phB]).filter(ph => /^3[A-L]{2,}$/.test(ph)))];
 
   function simGroupStandings(g) {
     const teams = {};
@@ -641,15 +736,15 @@ function simulateTournament(N){
     const res = {}, used = new Set();
     (function bt(i) {
       if (i >= slots.length) return true;
-      for (const t of qual) {
-        if (used.has(t.code) || !slots[i].groups.includes(t.group)) continue;
-        res[slots[i].ph] = t.code; used.add(t.code);
+      for (const tt of qual) {
+        if (used.has(tt.code) || !slots[i].groups.includes(tt.group)) continue;
+        res[slots[i].ph] = tt.code; used.add(tt.code);
         if (bt(i + 1)) return true;
-        used.delete(t.code);
+        used.delete(tt.code);
       }
       return false;
     })(0);
-    for (const s of slots) if (!res[s.ph]) { const t = qual.find(x => !used.has(x.code)); if (t) { res[s.ph] = t.code; used.add(t.code); } }
+    for (const s of slots) if (!res[s.ph]) { const tt = qual.find(x => !used.has(x.code)); if (tt) { res[s.ph] = tt.code; used.add(tt.code); } }
     return res;
   }
 
@@ -692,9 +787,8 @@ function simulateTournament(N){
   }
   const rows = allCodes
     .map(c => ({ code: c, group: teamGroup[c] || "?", champ: champ[c] / N, fin: fin[c] / N, semi: semi[c] / N, q8: q8[c] / N }))
-    .filter(t => t.q8 > 0.0005)
+    .filter(tt => tt.q8 > 0.0005)
     .sort((a, b) => b.champ - a.champ || b.fin - a.fin);
-  // данни за схемата: за всеки мач — най-вероятният отбор във всеки слот + предвиденият победител
   const topOf = o => { let best = null, bc = -1; for (const k in o) if (o[k] > bc) { bc = o[k]; best = k; } return best ? { code: best, p: bc / N } : null; };
   const bracket = {};
   for (const m of ko) {
@@ -709,7 +803,8 @@ function simulateTournament(N){
 }
 
 function renderChampion(){
-  if (champKey !== DATA.updatedAt) { champCache = simulateTournament(3000); champKey = DATA.updatedAt; }
+  const key = DATA.updatedAt + "|" + lang;
+  if (champKey !== key) { champCache = simulateTournament(3000); champKey = key; }
   const { rows, bracket } = champCache;
   const playedGroup = DATA.matches.filter(m => m.group && m.status === 0).length;
   const totalGroup = DATA.matches.filter(m => m.group).length;
@@ -733,70 +828,66 @@ function renderChampion(){
   const champ0 = rows[0];
 
   return `<div class="gcard">
-    <h3>🏅 Прогнозна схема на турнира</h3>
-    <div class="note">3000 симулации на оставащия турнир. Всеки слот показва най-вероятния отбор и шанса му да стигне дотам; зеленото е предвиденият победител. ${playedGroup}/${totalGroup} групови мача изиграни — схемата се обновява след всеки мач. Превърти настрани →</div>
-    <div class="champbanner">🏆 Прогнозиран шампион: ${flag(champ0.code)} <b>${name(champ0.code)}</b> · ${pcc(champ0.champ)} · финал ${pcc(champ0.fin)}</div>
-    <div class="brackwrap"><div class="bround-heads"><span>1/16</span><span>1/8</span><span>¼</span><span>½</span><span>Финал</span></div>
+    <h3>${t("ch_title")}</h3>
+    <div class="note">${t("ch_note")} ${playedGroup}/${totalGroup} ${t("ch_note2")}</div>
+    <div class="champbanner">${t("ch_banner")} ${flag(champ0.code)} <b>${name(champ0.code)}</b> · ${pcc(champ0.champ)} · ${t("ch_final")} ${pcc(champ0.fin)}</div>
+    <div class="brackwrap"><div class="bround-heads"><span>1/16</span><span>1/8</span><span>¼</span><span>½</span><span>${t("r_final")}</span></div>
     <div class="bracket">${node(finalM)}</div></div>
   </div>`;
 }
 
-// ---- Класации на турнира ----
+// ---- Класации ----
 function renderLeaderboards(){
   const players = Object.values(DATA.playerAgg);
   const pname = p => `${flag(p.team)} ${p.shirt ? p.shirt + ". " : ""}${p.name}`;
   function board(title, list, valCols){
     if (!list.length) return "";
-    return `<div class="gcard">
-      <h3>${title}</h3>
-      <table><tr><th>#</th><th>Играч</th>${valCols.map(c => `<th>${c.h}</th>`).join("")}</tr>
+    return `<div class="gcard"><h3>${title}</h3>
+      <table><tr><th>#</th><th>${t("th_player")}</th>${valCols.map(c => `<th>${c.h}</th>`).join("")}</tr>
       ${list.map((p, i) => `<tr class="${i === 0 ? "q1" : ""}"><td>${i + 1}</td>
-        <td><div class="teamcell">${pname(p)}</div></td>
-        ${valCols.map(c => `<td>${c.f(p)}</td>`).join("")}</tr>`).join("")}
+        <td><div class="teamcell">${pname(p)}</div></td>${valCols.map(c => `<td>${c.f(p)}</td>`).join("")}</tr>`).join("")}
       </table></div>`;
   }
   const top = (key, extra) => players.filter(p => p[key] > 0)
     .sort((a, b) => b[key] - a[key] || (extra ? b[extra] - a[extra] : 0) || a.apps - b.apps).slice(0, 12);
 
-  const scorers = board("⚽ Голмайстори (битка за Златната бутонка)", top("goals", "assists"),
-    [{ h: "Голове", f: p => `<b>${p.goals}</b>` }, { h: "Асист.", f: p => p.assists }, { h: "Мачове", f: p => p.apps }]);
-  const assists = board("🅰️ Асистенции", top("assists", "goals"),
-    [{ h: "Асист.", f: p => `<b>${p.assists}</b>` }, { h: "Голове", f: p => p.goals }]);
-  const shots = board("🎯 Най-много удари", top("shots", "onTarget"),
-    [{ h: "Удари", f: p => `<b>${p.shots}</b>` }, { h: "Точни", f: p => p.onTarget }, { h: "Голове", f: p => p.goals }]);
-  const cards = board("🟨 Най-наказвани", players.filter(p => p.y + p.r > 0).sort((a, b) => (b.y + b.r * 2) - (a.y + a.r * 2) || b.fouls - a.fouls).slice(0, 12),
-    [{ h: "🟨", f: p => p.y }, { h: "🟥", f: p => p.r }, { h: "Нарушения", f: p => p.fouls }]);
+  const scorers = board(t("lb_scorers"), top("goals", "assists"),
+    [{ h: t("lh_goals"), f: p => `<b>${p.goals}</b>` }, { h: t("lh_assists"), f: p => p.assists }, { h: t("lh_apps"), f: p => p.apps }]);
+  const assists = board(t("lb_assists"), top("assists", "goals"),
+    [{ h: t("lh_assists"), f: p => `<b>${p.assists}</b>` }, { h: t("lh_goals"), f: p => p.goals }]);
+  const shots = board(t("lb_shots"), top("shots", "onTarget"),
+    [{ h: t("lh_shots"), f: p => `<b>${p.shots}</b>` }, { h: t("lh_ontarget"), f: p => p.onTarget }, { h: t("lh_goals"), f: p => p.goals }]);
+  const cards = board(t("lb_cards"), players.filter(p => p.y + p.r > 0).sort((a, b) => (b.y + b.r * 2) - (a.y + a.r * 2) || b.fouls - a.fouls).slice(0, 12),
+    [{ h: "🟨", f: p => p.y }, { h: "🟥", f: p => p.r }, { h: t("lh_fouls"), f: p => p.fouls }]);
 
-  // отбори
-  const teams = Object.entries(DATA.teamAgg).map(([code, t]) => ({ code, ...t })).filter(t => t.matches);
+  const teams = Object.entries(DATA.teamAgg).map(([code, tt]) => ({ code, ...tt })).filter(tt => tt.matches);
   const teamBoard = (title, list, cols) => list.length ? `<div class="gcard"><h3>${title}</h3>
-    <table><tr><th>#</th><th>Отбор</th>${cols.map(c => `<th>${c.h}</th>`).join("")}</tr>
-    ${list.map((t, i) => `<tr class="${i === 0 ? "q1" : ""}"><td>${i + 1}</td><td><div class="teamcell">${flag(t.code)} ${name(t.code)}</div></td>
-      ${cols.map(c => `<td>${c.f(t)}</td>`).join("")}</tr>`).join("")}</table></div>` : "";
-  const attack = teamBoard("🔥 Най-резултатни отбори", [...teams].sort((a, b) => b.gf / b.matches - a.gf / a.matches).slice(0, 8),
-    [{ h: "Голове/мач", f: t => `<b>${(t.gf / t.matches).toFixed(1)}</b>` }, { h: "Общо", f: t => t.gf }, { h: "Мачове", f: t => t.matches }]);
-  const defense = teamBoard("🛡️ Най-стегната защита", [...teams].sort((a, b) => a.ga / a.matches - b.ga / b.matches).slice(0, 8),
-    [{ h: "Допуснати/мач", f: t => `<b>${(t.ga / t.matches).toFixed(1)}</b>` }, { h: "Общо", f: t => t.ga }]);
+    <table><tr><th>#</th><th>${t("lh_team")}</th>${cols.map(c => `<th>${c.h}</th>`).join("")}</tr>
+    ${list.map((tt, i) => `<tr class="${i === 0 ? "q1" : ""}"><td>${i + 1}</td><td><div class="teamcell">${flag(tt.code)} ${name(tt.code)}</div></td>
+      ${cols.map(c => `<td>${c.f(tt)}</td>`).join("")}</tr>`).join("")}</table></div>` : "";
+  const attack = teamBoard(t("lb_attack"), [...teams].sort((a, b) => b.gf / b.matches - a.gf / a.matches).slice(0, 8),
+    [{ h: t("lh_gpm"), f: tt => `<b>${(tt.gf / tt.matches).toFixed(1)}</b>` }, { h: t("lh_total"), f: tt => tt.gf }, { h: t("lh_apps"), f: tt => tt.matches }]);
+  const defense = teamBoard(t("lb_defense"), [...teams].sort((a, b) => a.ga / a.matches - b.ga / b.matches).slice(0, 8),
+    [{ h: t("lh_gapm"), f: tt => `<b>${(tt.ga / tt.matches).toFixed(1)}</b>` }, { h: t("lh_total"), f: tt => tt.ga }]);
 
-  if (!players.length) return '<div class="loading">Още няма изиграни мачове — класациите ще се появят след първите срещи.</div>';
+  if (!players.length) return `<div class="loading">${t("lb_empty")}</div>`;
   return scorers + assists + shots + cards + attack + defense;
 }
 
 // ---- съдии ----
 function renderRefs(){
   const refs = Object.values(DATA.referees).sort((a, b) => b.matches - a.matches || a.name.localeCompare(b.name));
-  if (!refs.length) return '<div class="loading">Още няма назначени съдии.</div>';
+  if (!refs.length) return `<div class="loading">${t("rf_empty")}</div>`;
   return `<div class="gcard">
-    <h3>Съдии на турнира</h3>
-    <div class="note">Статистиките са от изиграните мачове на Мондиал 2026, които всеки съдия е ръководил.</div>
-    <table><tr><th>Съдия</th><th>Държава</th><th>Мачове</th><th>🟨 общо</th><th>🟨/мач</th><th>🟥</th><th>Следващ мач</th></tr>
+    <h3>${t("rf_title")}</h3>
+    <div class="note">${t("rf_note")}</div>
+    <table><tr><th>${t("rfh_ref")}</th><th>${t("rfh_country")}</th><th>${t("rfh_matches")}</th><th>${t("rfh_ytotal")}</th><th>${t("rfh_ypm")}</th><th>🟥</th><th>${t("rfh_next")}</th></tr>
     ${refs.map(r => {
       const next = r.next
-        ? new Date(r.next.date).toLocaleDateString("bg-BG", { day: "numeric", month: "short" }) +
-          " · " + (BG[r.next.home] || phText(r.next.home)) + " – " + (BG[r.next.away] || phText(r.next.away))
+        ? new Date(r.next.date).toLocaleDateString(loc(), { day: "numeric", month: "short" }) +
+          " · " + (NAMES[lang][r.next.home] || phText(r.next.home)) + " – " + (NAMES[lang][r.next.away] || phText(r.next.away))
         : "—";
-      return `<tr>
-        <td><div class="teamcell">${flag(r.country)} ${r.name}</div></td>
+      return `<tr><td><div class="teamcell">${flag(r.country)} ${r.name}</div></td>
         <td>${name(r.country)}</td><td>${r.matches}</td><td>${r.y}</td>
         <td>${r.matches ? (r.y / r.matches).toFixed(1) : "—"}</td><td>${r.red}</td>
         <td style="font-size:.8rem">${next}</td></tr>`;
@@ -804,18 +895,77 @@ function renderRefs(){
     </table></div>`;
 }
 
-// ---- навигация ----
-document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
-  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
-  b.classList.add("active");
-  activeTab = b.dataset.tab;
-  render();
-}));
-document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
-  document.querySelectorAll(".chip").forEach(x => x.classList.remove("active"));
-  b.classList.add("active");
-  filter = b.dataset.f;
-  render();
-}));
+// ---- Инфо / About ----
+const ABOUT = {
+  bg: `
+  <div class="gcard about">
+    <h3>ℹ️ За сайта</h3>
+    <p>Това е безплатен прогнозен сайт за Световното първенство 2026. Тегли <b>живи данни</b> от три източника — Elo рейтингите от eloratings.net, програмата/резултатите/съдиите от официалното API на FIFA и детайлната статистика от ESPN — и ги обновява автоматично.</p>
+    <p>Прогнозите се градят на <b>композитен модел</b>: сила по Elo + всевременен голов профил + реалната форма в турнира. След всеки изигран мач числата стават по-точни. <span class="warn">Това е забавление, не съвет за залози.</span></p>
+  </div>
+  <div class="gcard about">
+    <h3>🔴 На живо по време на мач</h3>
+    <ul>
+      <li><b>Вероятност за победа в реално време</b> — преизчислява се според текущия резултат и оставащото време.</li>
+      <li><b>Събития на живо</b> — голове, картони и смени с минутата.</li>
+      <li><b>Отборна статистика на живо</b> — притежание, удари, точни удари, корнери, нарушения, картони (растат по време на мача).</li>
+      <li><b>Статистика по играч на живо</b> — кой колко удара, нарушения, голове и картони има в момента.</li>
+    </ul>
+    <p class="note">Обновяване на ~30 сек, докато тече мач; иначе на 5 мин.</p>
+  </div>
+  <div class="gcard about">
+    <h3>📂 Секциите</h3>
+    <ul>
+      <li><b>📅 Програма</b> — всички 104 мача по дни. Щракни върху мач за прогноза (изход, резултат, над/под 2.5, гол-гол, картони, корнери), очаквана статистика на играчите, „кой ще отбележи", преки срещи (H2H), а след мача — дали прогнозата е познала и колко изненадващ е бил резултатът.</li>
+      <li><b>🏆 Групи</b> — класиранията на живо + 5000 симулации за шансовете за 1-во/2-ро/3-то място.</li>
+      <li><b>🏅 Шампион</b> — прогнозна схема (bracket) на целия турнир от 3000 симулации: кой докъде стига и шанс за титлата.</li>
+      <li><b>📊 Класации</b> — голмайстори, асистенции, удари, най-наказвани играчи и най-добри атаки/защити.</li>
+      <li><b>🧑‍⚖️ Съдии</b> — статистика на всеки съдия (картони на мач) и следващият му мач.</li>
+    </ul>
+  </div>`,
+  en: `
+  <div class="gcard about">
+    <h3>ℹ️ About</h3>
+    <p>A free prediction site for the 2026 World Cup. It pulls <b>live data</b> from three sources — Elo ratings from eloratings.net, the schedule/results/referees from FIFA's official API, and detailed stats from ESPN — and refreshes automatically.</p>
+    <p>Predictions use a <b>composite model</b>: Elo strength + all-time goal profile + real tournament form. After every match the numbers get sharper. <span class="warn">This is for fun, not betting advice.</span></p>
+  </div>
+  <div class="gcard about">
+    <h3>🔴 Live during a match</h3>
+    <ul>
+      <li><b>Real-time win probability</b> — recalculated from the current score and time remaining.</li>
+      <li><b>Live events</b> — goals, cards and substitutions with the minute.</li>
+      <li><b>Live team stats</b> — possession, shots, shots on target, corners, fouls, cards (growing during the match).</li>
+      <li><b>Live per-player stats</b> — each player's shots, fouls, goals and cards so far.</li>
+    </ul>
+    <p class="note">Refreshes every ~30s while a match is live; otherwise every 5 min.</p>
+  </div>
+  <div class="gcard about">
+    <h3>📂 The sections</h3>
+    <ul>
+      <li><b>📅 Schedule</b> — all 104 matches by day. Tap a match for the prediction (outcome, score, over/under 2.5, BTTS, cards, corners), projected player stats, "who'll score", head-to-head, and after the match whether the prediction hit and how surprising the result was.</li>
+      <li><b>🏆 Groups</b> — live standings + 5000 simulations for 1st/2nd/3rd place chances.</li>
+      <li><b>🏅 Winner</b> — a predicted bracket of the whole tournament from 3000 simulations: who reaches where and title odds.</li>
+      <li><b>📊 Leaders</b> — top scorers, assists, shots, most-booked players and best attacks/defences.</li>
+      <li><b>🧑‍⚖️ Referees</b> — each referee's stats (cards per match) and their next match.</li>
+    </ul>
+  </div>`,
+};
+function renderAbout(){ return ABOUT[lang]; }
 
-load();   // следващите обновявания се пускат от scheduleNext() (30 сек при жив мач, иначе 5 мин)
+// ---- навигация ----
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab"); if (!b) return;
+  activeTab = b.dataset.tab; renderChrome(); render();
+});
+document.getElementById("filters").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  filter = b.dataset.f; renderChrome(); render();
+});
+document.querySelector(".langtoggle").addEventListener("click", e => {
+  const b = e.target.closest(".langbtn"); if (!b) return;
+  lang = b.dataset.lang; localStorage.setItem("lang", lang);
+  renderChrome(); setStatus(); renderAccuracy(); render();
+});
+
+renderChrome();
+load();   // следващите обновявания се пускат от scheduleNext()
