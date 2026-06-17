@@ -232,6 +232,12 @@ function render(){
   else if (activeTab === "champion") c.innerHTML = renderChampion();
   else if (activeTab === "stats") c.innerHTML = renderLeaderboards();
   else c.innerHTML = renderRefs();
+  // обвиваме таблиците, за да се скролват настрани на тесен екран (телефон)
+  c.querySelectorAll("table").forEach(tb => {
+    if (tb.parentElement && tb.parentElement.classList.contains("tscroll")) return;
+    const w = document.createElement("div"); w.className = "tscroll";
+    tb.parentNode.insertBefore(w, tb); w.appendChild(tb);
+  });
 }
 
 // ---- програма ----
