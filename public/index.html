@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚽ Мондиал 2026 — Прогнози на живо</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="logo">⚽</div>
+    <h1>Мондиал <span>2026</span></h1>
+    <p class="subtitle">Прогнози на живо · Elo + статистики от няколко източника</p>
+    <p id="status"><span class="dot"></span> Зареждане на данните…</p>
+    <div id="accuracy" class="acc"></div>
+  </div>
+</header>
+
+<div class="navbar">
+  <div class="navbar-inner">
+    <nav id="tabs">
+      <button class="tab active" data-tab="schedule"><span class="ic">📅</span> Програма</button>
+      <button class="tab" data-tab="groups"><span class="ic">🏆</span> Групи</button>
+      <button class="tab" data-tab="champion"><span class="ic">🏅</span> Шампион</button>
+      <button class="tab" data-tab="stats"><span class="ic">📊</span> Класации</button>
+      <button class="tab" data-tab="refs"><span class="ic">🧑‍⚖️</span> Съдии</button>
+    </nav>
+    <div id="filters" class="filters">
+      <button class="chip active" data-f="all">Всички</button>
+      <button class="chip" data-f="today">Днес</button>
+      <button class="chip" data-f="upcoming">Предстоящи</button>
+      <button class="chip" data-f="played">Изиграни</button>
+    </div>
+  </div>
+</div>
+
+<main id="content"><div class="loading"><div class="spinner"></div>Зареждане…</div></main>
+
+<footer>
+  <p>Данни от <a href="https://eloratings.net" target="_blank">eloratings.net</a>, <a href="https://www.fifa.com" target="_blank">api.fifa.com</a> и ESPN — обновяват се автоматично на всеки 5 минути.</p>
+  <p>Прогнозите са вероятности от Elo + голов профил + статистики, не са гаранции.</p>
+  <p class="warn">⚠ Залагай само за забавление и с малки суми.</p>
+</footer>
+
+<script src="model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

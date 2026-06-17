@@ -1,0 +1,12 @@
+{
+  "name": "mondial2026",
+  "version": "1.0.0",
+  "description": "Мондиал 2026 — прогнози на живо",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
