@@ -14,39 +14,25 @@
 
 <header class="hero">
   <div class="hero-inner">
+    <div class="langtoggle"><button class="langbtn" data-lang="bg">BG</button><button class="langbtn" data-lang="en">EN</button></div>
     <div class="logo">⚽</div>
-    <h1>Мондиал <span>2026</span></h1>
-    <p class="subtitle">Прогнози на живо · Elo + статистики от няколко източника</p>
-    <p id="status"><span class="dot"></span> Зареждане на данните…</p>
+    <h1 id="brand">Мондиал <span>2026</span></h1>
+    <p class="subtitle" id="subtitle"></p>
+    <p id="status"><span class="dot"></span> …</p>
     <div id="accuracy" class="acc"></div>
   </div>
 </header>
 
 <div class="navbar">
   <div class="navbar-inner">
-    <nav id="tabs">
-      <button class="tab active" data-tab="schedule"><span class="ic">📅</span> Програма</button>
-      <button class="tab" data-tab="groups"><span class="ic">🏆</span> Групи</button>
-      <button class="tab" data-tab="champion"><span class="ic">🏅</span> Шампион</button>
-      <button class="tab" data-tab="stats"><span class="ic">📊</span> Класации</button>
-      <button class="tab" data-tab="refs"><span class="ic">🧑‍⚖️</span> Съдии</button>
-    </nav>
-    <div id="filters" class="filters">
-      <button class="chip active" data-f="all">Всички</button>
-      <button class="chip" data-f="today">Днес</button>
-      <button class="chip" data-f="upcoming">Предстоящи</button>
-      <button class="chip" data-f="played">Изиграни</button>
-    </div>
+    <nav id="tabs"></nav>
+    <div id="filters" class="filters"></div>
   </div>
 </div>
 
-<main id="content"><div class="loading"><div class="spinner"></div>Зареждане…</div></main>
+<main id="content"><div class="loading"><div class="spinner"></div></div></main>
 
-<footer>
-  <p>Данни от <a href="https://eloratings.net" target="_blank">eloratings.net</a>, <a href="https://www.fifa.com" target="_blank">api.fifa.com</a> и ESPN — обновяват се автоматично на всеки 5 минути.</p>
-  <p>Прогнозите са вероятности от Elo + голов профил + статистики, не са гаранции.</p>
-  <p class="warn">⚠ Залагай само за забавление и с малки суми.</p>
-</footer>
+<footer id="footer"></footer>
 
 <script src="model.js"></script>
 <script src="app.js"></script>
