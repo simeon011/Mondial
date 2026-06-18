@@ -67,7 +67,7 @@ const L = {
     v_cards:"Картони", lbl_yellow:"жълти", lbl_red:"червени", v_corners:"Корнери",
     phl_title:"Акценти по играчи:", phl_shots:"най-много удари", phl_card:"най-вероятен картон",
     ls_possession:"Притежание", ls_cards:"Картони 🟨🟥",
-    lp_title:"Играчи на живо", lp_none:"още няма действия", lp_fouls:"наруш.",
+    lp_title:"Играчи на живо", lp_none:"още няма действия", lp_fouls:"наруш.", lp_ontarget:"точни",
     h2h_title:"Преки срещи (последни", h2h_draws:"равни",
     ts_title:"⚽ Кой ще отбележи (шанс за гол в мача)",
     pr_hit:"Прогнозата позна", over25:"над 2.5", under25:"под 2.5", yes_l:"да", no_l:"не", draw_l:"равен",
@@ -111,7 +111,7 @@ const L = {
     v_cards:"Cards", lbl_yellow:"yellow", lbl_red:"red", v_corners:"Corners",
     phl_title:"Player highlights:", phl_shots:"most shots", phl_card:"most likely booking",
     ls_possession:"Possession", ls_cards:"Cards 🟨🟥",
-    lp_title:"Live players", lp_none:"no actions yet", lp_fouls:"fouls",
+    lp_title:"Live players", lp_none:"no actions yet", lp_fouls:"fouls", lp_ontarget:"on tgt",
     h2h_title:"Head-to-head (last", h2h_draws:"draws",
     ts_title:"⚽ Who'll score (chance to score)",
     pr_hit:"Prediction hit", over25:"over 2.5", under25:"under 2.5", yes_l:"yes", no_l:"no", draw_l:"draw",
@@ -436,6 +436,7 @@ function livePlayersHtml(m){
       const tags = [
         p.goals ? "⚽".repeat(p.goals) : "",
         p.shots ? `${p.shots} ${shotW(p.shots)}` : "",
+        p.onTarget ? `${p.onTarget} ${t("lp_ontarget")}` : "",
         p.fouls ? `${p.fouls} ${t("lp_fouls")}` : "",
         "🟨".repeat(p.y) + "🟥".repeat(p.r),
       ].filter(Boolean).join(" · ");
