@@ -86,9 +86,15 @@ function mapTeam(t) {
 }
 
 async function getMatches() {
-  // при мач на живо опресняваме програмата на 18 сек, иначе на 3 мин
-  const hasLive = matchCache.data && matchCache.data.some(m => m.status === 3);
-  const ttl = hasLive ? 18e3 : 3 * 60e3;
+  // близо до старт или по време на мач опресняваме на 18 сек (за да хванем старта/часовника бързо), иначе на 3 мин
+  const now = Date.now();
+  const near = matchCache.data && matchCache.data.some(m => {
+    if (m.status === 3) return true;
+    if (m.status === 0 || !m.home || !m.away) return false;
+    const dt = new Date(m.date).getTime() - now;
+    return dt < 15 * 60e3 && dt > -3.5 * 3600e3;   // от 15 мин преди старта до 3.5ч след него
+  });
+  const ttl = near ? 18e3 : 3 * 60e3;
   if (matchCache.data && Date.now() - matchCache.t < ttl) return matchCache.data;
   const j = await (await fetch(FIFA_CALENDAR)).json();
   const ms = (j.Results || []).map(m => {
@@ -330,29 +336,57 @@ async function getLiveData(matches) {
       }
       stats[m.home.code].onTarget += stats[m.home.code].goals;
       stats[m.away.code].onTarget += stats[m.away.code].goals;
-      // притежание на топката на живо от ESPN
+      // ESPN е по-точен на живо от хронологията на ФИФА — взимаме отборните и индивидуалните числа оттам
       try {
         const eid = await findEspnId(m);
         if (eid) {
           const es = await (await fetch(`${ESPN}/summary?event=${eid}`)).json();
-          for (const t of (es.boxscore && es.boxscore.teams) || []) {
-            const code = t.team.abbreviation;
-            const pos = (t.statistics || []).find(x => x.name === "possessionPct");
-            if (stats[code] && pos) stats[code].possession = Number(pos.value != null ? pos.value : pos.displayValue);
+          // часовникът на ESPN е по-точен и не изчезва на полувремето
+          const comp0 = es.header && es.header.competitions && es.header.competitions[0];
+          if (comp0 && comp0.status && comp0.status.displayClock) {
+            m.matchTime = comp0.status.displayClock;
+            const mn = parseInt(comp0.status.displayClock, 10);
+            if (!Number.isNaN(mn)) m.minute = mn;
           }
-          // точни удари по играч (свързване по отбор + номер на фланелка)
+          const MAP = { totalShots: "shots", shotsOnTarget: "onTarget", wonCorners: "corners", foulsCommitted: "fouls", offsides: "offsides", yellowCards: "y", redCards: "r", possessionPct: "possession" };
+          for (const tm of (es.boxscore && es.boxscore.teams) || []) {
+            const code = tm.team.abbreviation;
+            if (!stats[code]) continue;
+            for (const s of tm.statistics || []) {
+              const key = MAP[s.name];
+              if (!key) continue;
+              const v = Number(s.value != null ? s.value : s.displayValue);
+              if (!Number.isNaN(v)) stats[code][key] = v;
+            }
+          }
+          // статистика по играч от ESPN (свързване по отбор + номер на фланелка)
           const byShirt = {};
           for (const pl of Object.values(players)) if (pl.shirt != null) byShirt[pl.team + "|" + pl.shirt] = pl;
           for (const side of es.rosters || []) {
             const code = side.team && side.team.abbreviation;
+            if (!code || !stats[code]) continue;
             for (const rp of side.roster || []) {
-              const st = (rp.stats || []).find(x => x.name === "shotsOnTarget");
-              const pl = byShirt[code + "|" + (rp.jersey || "")];
-              if (pl && st) pl.onTarget = Number(st.value) || 0;
+              if (!rp.athlete) continue;
+              const st = {};
+              for (const s of (rp.stats || [])) st[s.name] = Number(s.value) || 0;
+              const k = code + "|" + (rp.jersey || "");
+              let pl = byShirt[k];
+              if (!pl && (st.totalShots || st.foulsCommitted || st.totalGoals || st.yellowCards || st.redCards)) {
+                pl = { team: code, name: rp.athlete.displayName, shirt: rp.jersey || null, goals: 0, shots: 0, onTarget: 0, fouls: 0, y: 0, r: 0 };
+                players["e" + rp.athlete.id] = pl; byShirt[k] = pl;
+              }
+              if (pl) {
+                if (st.totalShots != null) pl.shots = st.totalShots;
+                if (st.shotsOnTarget != null) pl.onTarget = st.shotsOnTarget;
+                if (st.foulsCommitted != null) pl.fouls = st.foulsCommitted;
+                if (st.totalGoals != null) pl.goals = st.totalGoals;
+                if (st.yellowCards != null) pl.y = st.yellowCards;
+                if (st.redCards != null) pl.r = st.redCards;
+              }
             }
           }
         }
-      } catch (e) { /* без притежание */ }
+      } catch (e) { /* ако ESPN не отговори, остават числата от ФИФА */ }
       m.liveEvents = evs.slice(-12).reverse();
       m.liveStats = stats;
       // активните играчи по отбор (с поне едно действие), подредени по значимост
