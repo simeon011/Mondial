@@ -48,7 +48,7 @@ const L = {
     brandPre:"Мондиал", subtitle:"Прогнози на живо · Elo + статистики от няколко източника",
     tab_schedule:"Програма", tab_groups:"Групи", tab_champion:"Шампион", tab_stats:"Класации", tab_refs:"Съдии", tab_info:"Инфо",
     f_all:"Всички", f_today:"Днес", f_upcoming:"Предстоящи", f_played:"Изиграни",
-    loading:"Зареждане…", updated:"Обновено", liveRefresh:"🔴 на живо — обновяване на 30 сек", normalRefresh:"обновяване на 5 мин",
+    loading:"Зареждане…", updated:"Обновено", liveRefresh:"🔴 на живо — обновяване на 20 сек", normalRefresh:"обновяване на 5 мин",
     loadErr:"Грешка при зареждане", retry:"нов опит след 30 сек",
     footer1:'Данни от eloratings.net, api.fifa.com и ESPN — обновяват се автоматично.', footer2:"Прогнозите са вероятности от Elo + голов профил + статистики, не са гаранции.", footer3:"⚠ Залагай само за забавление и с малки суми.",
     acc:"Успеваемост", a_outcome:"изход", a_goals:"голове", a_btts:"гол-гол",
@@ -92,7 +92,7 @@ const L = {
     brandPre:"World Cup", subtitle:"Live predictions · Elo + multi-source stats",
     tab_schedule:"Schedule", tab_groups:"Groups", tab_champion:"Winner", tab_stats:"Leaders", tab_refs:"Referees", tab_info:"About",
     f_all:"All", f_today:"Today", f_upcoming:"Upcoming", f_played:"Played",
-    loading:"Loading…", updated:"Updated", liveRefresh:"🔴 live — refreshing every 30s", normalRefresh:"refreshing every 5 min",
+    loading:"Loading…", updated:"Updated", liveRefresh:"🔴 live — refreshing every 20s", normalRefresh:"refreshing every 5 min",
     loadErr:"Loading error", retry:"retrying in 30s",
     footer1:'Data from eloratings.net, api.fifa.com and ESPN — auto-updated.', footer2:"Predictions are probabilities from Elo + goal profile + stats, not guarantees.", footer3:"⚠ For fun only — bet small if at all.",
     acc:"Accuracy", a_outcome:"outcome", a_goals:"goals", a_btts:"BTTS",
@@ -196,7 +196,7 @@ let reloadTimer = null;
 function scheduleNext(){
   clearTimeout(reloadTimer);
   const live = DATA && DATA.matches && DATA.matches.some(m => m.status === 3);
-  reloadTimer = setTimeout(load, live ? 30e3 : 5 * 60e3);
+  reloadTimer = setTimeout(load, live ? 20e3 : 5 * 60e3);
 }
 
 async function load(){
