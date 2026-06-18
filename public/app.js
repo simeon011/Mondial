@@ -72,7 +72,7 @@ const L = {
     ts_title:"⚽ Кой ще отбележи (шанс за гол в мача)",
     pr_hit:"Прогнозата позна", over25:"над 2.5", under25:"под 2.5", yes_l:"да", no_l:"не", draw_l:"равен",
     sp_mild:"🙂 леко изненадващо", sp_surprise:"😮 изненада", sp_big:"🤯 голяма изненада", rf:"⚠️ рисков фаворит",
-    live_now:"● НА ЖИВО", m_no:"мач №", time_suffix:" ч.", pens:"дузпи", corners_w:"корнера", live_winprob:"вероятност за победа сега",
+    live_now:"● НА ЖИВО", m_no:"мач №", time_suffix:" ч.", pens:"дузпи", corners_w:"корнера", live_winprob:"вероятност за победа сега", live_proj:"Прогноза до края",
     src_combines:"Прогнозата комбинира:", src_goalprofile:"голов профил", src_stats:"статистики", src_from:"от", src_statdetail:"(голове, владение, удари — FIFA & ESPN)", src_noMatches:"тези отбори още нямат мачове на турнира",
     st_expResult:"Очакван резултат", st_over25:"Над 2.5 гола", st_btts:"Двата бележат", st_advance:"Класиране —", st_power:"Сила (Elo + форма)",
     st_predcorners:"Прогноза корнери", st_predyellow:"Прогноза 🟨 жълти", st_predred:"Прогноза 🟥 червени",
@@ -116,7 +116,7 @@ const L = {
     ts_title:"⚽ Who'll score (chance to score)",
     pr_hit:"Prediction hit", over25:"over 2.5", under25:"under 2.5", yes_l:"yes", no_l:"no", draw_l:"draw",
     sp_mild:"🙂 mild surprise", sp_surprise:"😮 surprise", sp_big:"🤯 big surprise", rf:"⚠️ risky favourite",
-    live_now:"● LIVE", m_no:"match #", time_suffix:"", pens:"pens", corners_w:"corners", live_winprob:"win probability now",
+    live_now:"● LIVE", m_no:"match #", time_suffix:"", pens:"pens", corners_w:"corners", live_winprob:"win probability now", live_proj:"Projected final",
     src_combines:"Prediction combines:", src_goalprofile:"goal profile", src_stats:"stats", src_from:"from", src_statdetail:"(goals, possession, shots — FIFA & ESPN)", src_noMatches:"these teams have no tournament matches yet",
     st_expResult:"Expected score", st_over25:"Over 2.5 goals", st_btts:"Both to score", st_advance:"Advance —", st_power:"Power (Elo + form)",
     st_predcorners:"Predicted corners", st_predyellow:"Predicted 🟨 yellow", st_predred:"Predicted 🟥 red",
@@ -168,6 +168,9 @@ let DATA = null;
 let activeTab = "schedule";
 let filter = "all";
 const openMatches = new Set();
+let flashing = false;        // true само при тих ъпдейт на живи карти → светва промененото
+const liveSnap = {};         // предишните живи стойности (за засичане на промяна)
+let lastSig = "";            // подпис на изгледа (структура) — за да решим пълно или тихо обновяване
 
 // ---- интерфейс (преводим): табове, филтри, заглавие, статус ----
 const TABS = [["schedule","📅"],["groups","🏆"],["champion","🏅"],["stats","📊"],["refs","🧑‍⚖️"],["info","ℹ️"]];
@@ -203,7 +206,9 @@ async function load(){
     if (DATA.error) throw new Error(DATA.error);
     setStatus();
     renderAccuracy();
-    render();
+    const sig = viewSig();
+    if (sig !== lastSig) render();   // структурата се смени (нов мач/статус/таб) → пълно прерисуване
+    else if (activeTab === "schedule" && DATA.matches.some(m => m.status === 3)) liveTick();   // тих ъпдейт само на живите карти
     scheduleNext();
   } catch (e) {
     document.getElementById("status").innerHTML = '<span class="err">' + t("loadErr") + " (" + e.message + ") — " + t("retry") + ".</span>";
@@ -221,6 +226,35 @@ function renderAccuracy(){
     `<b>${t("a_outcome")} ${pct(a.outcome)}%</b> · ${t("a_goals")} ${pct(a.ou)}% · ${t("a_btts")} ${pct(a.btts)}%`;
 }
 
+// обвиваме таблиците, за да се скролват настрани на тесен екран (телефон)
+function wrapTables(root){
+  root.querySelectorAll("table").forEach(tb => {
+    if (tb.parentElement && tb.parentElement.classList.contains("tscroll")) return;
+    const w = document.createElement("div"); w.className = "tscroll";
+    tb.parentNode.insertBefore(w, tb); w.appendChild(tb);
+  });
+}
+
+function viewSig(){
+  return activeTab + "|" + filter + "|" + lang + "|" + (DATA ? DATA.matches.map(m => m.id + m.status).join(",") : "");
+}
+
+// Тих ъпдейт: пресъздава САМО картите на живите мачове (без да пипа останалата страница),
+// а промененото свети жълто (flashing = true).
+function liveTick(){
+  flashing = true;
+  for (const m of DATA.matches) {
+    if (m.status !== 3 || !matchPassesFilter(m)) continue;
+    const el = document.querySelector(`.match[onclick*="${m.id}"]`);
+    if (!el) continue;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = renderMatch(m);
+    const fresh = tmp.firstElementChild;
+    if (fresh) { wrapTables(fresh); el.replaceWith(fresh); }
+  }
+  flashing = false;
+}
+
 function render(){
   const ff = document.getElementById("filters");
   if (ff) ff.style.display = activeTab === "schedule" ? "flex" : "none";
@@ -232,12 +266,8 @@ function render(){
   else if (activeTab === "champion") c.innerHTML = renderChampion();
   else if (activeTab === "stats") c.innerHTML = renderLeaderboards();
   else c.innerHTML = renderRefs();
-  // обвиваме таблиците, за да се скролват настрани на тесен екран (телефон)
-  c.querySelectorAll("table").forEach(tb => {
-    if (tb.parentElement && tb.parentElement.classList.contains("tscroll")) return;
-    const w = document.createElement("div"); w.className = "tscroll";
-    tb.parentNode.insertBefore(w, tb); w.appendChild(tb);
-  });
+  wrapTables(c);
+  lastSig = viewSig();
 }
 
 // ---- програма ----
@@ -411,24 +441,32 @@ function liveStatsHtml(m){
   if (!m.liveStats) return "";
   const h = m.liveStats[m.home.code], a = m.liveStats[m.away.code];
   if (!h || !a) return "";
+  const snap = liveSnap[m.id] = liveSnap[m.id] || {};
+  const prev = snap.s || {}, cur = {};
+  const val = (key, num, disp) => {                       // светва жълто при промяна на показаната стойност
+    const d = disp != null ? disp : num; cur[key] = d;
+    const fl = (flashing && (key in prev) && prev[key] !== d) ? "flash" : "";
+    return `<b class="${fl}">${d}</b>`;
+  };
   const bar = (x, y) => { const tot = x + y || 1; return `<span class="lsbar"><i style="width:${x / tot * 100}%"></i></span>`; };
-  const row = (l, x, y, dx, dy) => `<div class="lsrow"><b>${dx != null ? dx : x}</b><span class="lsl">${l}</span><b>${dy != null ? dy : y}</b></div>${bar(x, y)}`;
-  const cards = (h.y + a.y + h.r + a.r) > 0 ? row(t("ls_cards"), h.y + h.r, a.y + a.r) : "";
-  const poss = (h.possession != null && a.possession != null)
-    ? row(t("ls_possession"), h.possession, a.possession, Math.round(h.possession) + "%", Math.round(a.possession) + "%") : "";
-  return `<div class="livestats">
-    ${poss}
-    ${row(t("m_shots"), h.shots, a.shots)}
-    ${row(t("m_ontarget"), h.onTarget, a.onTarget)}
-    ${row(t("st_corners"), h.corners, a.corners)}
-    ${row(t("m_fouls"), h.fouls, a.fouls)}
-    ${cards}
-  </div>`;
+  const row = (key, l, x, y, dx, dy) => `<div class="lsrow">${val(key + "H", x, dx)}<span class="lsl">${l}</span>${val(key + "A", y, dy)}</div>${bar(x, y)}`;
+  let html = `<div class="livestats">`;
+  if (h.possession != null && a.possession != null) html += row("poss", t("ls_possession"), h.possession, a.possession, Math.round(h.possession) + "%", Math.round(a.possession) + "%");
+  html += row("sh", t("m_shots"), h.shots, a.shots);
+  html += row("ot", t("m_ontarget"), h.onTarget, a.onTarget);
+  html += row("co", t("st_corners"), h.corners, a.corners);
+  html += row("fo", t("m_fouls"), h.fouls, a.fouls);
+  if ((h.y + a.y + h.r + a.r) > 0) html += row("ca", t("ls_cards"), h.y + h.r, a.y + a.r);
+  html += `</div>`;
+  snap.s = cur;
+  return html;
 }
 
 function livePlayersHtml(m){
   if (!m.livePlayers) return "";
   const shotW = n => lang === "bg" ? (n > 1 ? "удара" : "удар") : (n > 1 ? "shots" : "shot");
+  const snap = liveSnap[m.id] = liveSnap[m.id] || {};
+  const prevP = snap.p || {}, curP = {};
   const side = code => {
     const list = (m.livePlayers[code] || []).slice(0, 6);
     if (!list.length) return `<div class="lpcol"><div class="lpt">${flag(code)} ${name(code)}</div><div class="note">${t("lp_none")}</div></div>`;
@@ -440,10 +478,15 @@ function livePlayersHtml(m){
         p.fouls ? `${p.fouls} ${t("lp_fouls")}` : "",
         "🟨".repeat(p.y) + "🟥".repeat(p.r),
       ].filter(Boolean).join(" · ");
-      return `<div class="lprow"><span class="lpn">${p.shirt ? p.shirt + ". " : ""}${p.name}</span><span class="lpv">${tags}</span></div>`;
+      const key = code + "|" + (p.shirt || "") + "|" + p.name;
+      curP[key] = tags;
+      const fl = (flashing && (key in prevP) && prevP[key] !== tags) ? " flash" : "";
+      return `<div class="lprow"><span class="lpn">${p.shirt ? p.shirt + ". " : ""}${p.name}</span><span class="lpv${fl}">${tags}</span></div>`;
     }).join("")}</div>`;
   };
-  return `<div class="lptitle">${t("lp_title")}</div><div class="liveplayers">${side(m.home.code)}${side(m.away.code)}</div>`;
+  const html = `<div class="lptitle">${t("lp_title")}</div><div class="liveplayers">${side(m.home.code)}${side(m.away.code)}</div>`;
+  snap.p = curP;
+  return html;
 }
 
 function h2hLine(m){
@@ -554,13 +597,26 @@ function renderMatch(m){
     const ko = m.stageName !== "First Stage";
     let p1 = r.p1, px = r.px, p2 = r.p2;
     if (ko) { const sh = 0.5 + (r.we - 0.5) * 0.6; p1 += px * sh; p2 += px * (1 - sh); px = 0; }
+    const cards = predictCards(m, r.we);
+    const corners = predictCorners(m, r.lA, r.lB);
     if (live) {
-      const ml = Math.max(0, 92 - (m.minute || 0));
+      const minute = m.minute || 0;
+      const ml = Math.max(0, 92 - minute);
       const lp = liveProb(m.hs || 0, m.as || 0, comp.lA * ml / 90, comp.lB * ml / 90);
       p1 = lp.p1; px = lp.px; p2 = lp.p2;
+      // живи прогнози за корнери/картони до края — смес от пред-мач очакване и реалния темп на мача
+      const el2 = Math.min(minute, 90);
+      const proj = (curr, pre) => { if (el2 < 1) return pre; const w = clamp(el2 / 70, 0, 1); const perMin = (pre / 90) * (1 - w) + (curr / Math.max(el2, 8)) * w; return curr + perMin * ml; };
+      let projLine = "";
+      const ls = m.liveStats;
+      if (ls && ls[m.home.code] && ls[m.away.code]) {
+        const curC = (ls[m.home.code].corners || 0) + (ls[m.away.code].corners || 0);
+        const curY = (ls[m.home.code].y || 0) + (ls[m.away.code].y || 0);
+        projLine = `<div class="liveproj">📈 ${t("live_proj")}: ~${proj(curC, corners.total).toFixed(0)} ${t("corners_w")} · ~${proj(curY, cards.y).toFixed(1)} ${t("lbl_yellow")}</div>`;
+      }
       const evs = (m.liveEvents || []).slice(0, 6).map(e => `<span class="lev">${e.min} ${e.kind}${e.team ? " " + flag(e.team) : ""}</span>`).join("");
       liveLine = `<div class="livebox"><div class="livehdr">🔴 ${t("live_now").replace("● ", "")} ${m.matchTime || ""} · ${t("live_winprob")}</div>` +
-        `${evs ? `<div class="levs">${evs}</div>` : ""}${liveStatsHtml(m)}${livePlayersHtml(m)}</div>`;
+        `${projLine}${evs ? `<div class="levs">${evs}</div>` : ""}${liveStatsHtml(m)}${livePlayersHtml(m)}</div>`;
     }
     bar = `<div class="pbar">
       <div class="p1" style="width:${p1 * 100}%">${pc(p1)}</div>
@@ -569,8 +625,6 @@ function renderMatch(m){
     </div>`;
     headBadge = riskyFavBadge(p1, p2, comp.lA, comp.lB);
     const maxP = r.top[0].p;
-    const cards = predictCards(m, r.we);
-    const corners = predictCorners(m, r.lA, r.lB);
     const mhMult = teamProjMult(m.home.code, comp.lA, r.we, true);
     const maMult = teamProjMult(m.away.code, comp.lB, r.we, false);
     const tm = (DATA.teamAgg[m.home.code]?.matches || 0) + (DATA.teamAgg[m.away.code]?.matches || 0);
