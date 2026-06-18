@@ -22,7 +22,7 @@
   --shadow-lg:0 20px 50px -18px rgba(28,55,105,.38);
 }
 *{box-sizing:border-box; margin:0; padding:0;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth; background:var(--bg); min-height:100%;}
 body{
   background:var(--bg);
   color:var(--text);
