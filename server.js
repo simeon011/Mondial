@@ -309,7 +309,7 @@ async function getLiveData(matches) {
       const players = {};
       const P = (pid, code) => {
         if (!pid || !code) return null;
-        if (!players[pid]) players[pid] = { team: code, name: (names[pid] && names[pid].name) || "Играч", shirt: names[pid] && names[pid].shirt || null, goals: 0, shots: 0, fouls: 0, y: 0, r: 0 };
+        if (!players[pid]) players[pid] = { team: code, name: (names[pid] && names[pid].name) || "Играч", shirt: names[pid] && names[pid].shirt || null, goals: 0, shots: 0, onTarget: 0, fouls: 0, y: 0, r: 0 };
         return players[pid];
       };
       for (const e of tl.Event || []) {
@@ -339,6 +339,17 @@ async function getLiveData(matches) {
             const code = t.team.abbreviation;
             const pos = (t.statistics || []).find(x => x.name === "possessionPct");
             if (stats[code] && pos) stats[code].possession = Number(pos.value != null ? pos.value : pos.displayValue);
+          }
+          // точни удари по играч (свързване по отбор + номер на фланелка)
+          const byShirt = {};
+          for (const pl of Object.values(players)) if (pl.shirt != null) byShirt[pl.team + "|" + pl.shirt] = pl;
+          for (const side of es.rosters || []) {
+            const code = side.team && side.team.abbreviation;
+            for (const rp of side.roster || []) {
+              const st = (rp.stats || []).find(x => x.name === "shotsOnTarget");
+              const pl = byShirt[code + "|" + (rp.jersey || "")];
+              if (pl && st) pl.onTarget = Number(st.value) || 0;
+            }
           }
         }
       } catch (e) { /* без притежание */ }
