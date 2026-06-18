@@ -86,9 +86,9 @@ function mapTeam(t) {
 }
 
 async function getMatches() {
-  // при мач на живо опресняваме програмата на 25 сек, иначе на 3 мин
+  // при мач на живо опресняваме програмата на 18 сек, иначе на 3 мин
   const hasLive = matchCache.data && matchCache.data.some(m => m.status === 3);
-  const ttl = hasLive ? 25e3 : 3 * 60e3;
+  const ttl = hasLive ? 18e3 : 3 * 60e3;
   if (matchCache.data && Date.now() - matchCache.t < ttl) return matchCache.data;
   const j = await (await fetch(FIFA_CALENDAR)).json();
   const ms = (j.Results || []).map(m => {
