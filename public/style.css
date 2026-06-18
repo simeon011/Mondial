@@ -307,6 +307,9 @@ tr.q2 td{background:linear-gradient(90deg, rgba(0,179,104,.08), transparent);}
 .gcard tr.q1 td:first-child{box-shadow:inset 4px 0 0 var(--green);}
 .gcard tr.q2 td:first-child{box-shadow:inset 4px 0 0 var(--green-d);}
 
+@keyframes flashY{0%{background:#ffd84d; box-shadow:0 0 0 3px #ffd84d;}100%{background:transparent; box-shadow:0 0 0 3px transparent;}}
+.flash{animation:flashY 1.4s ease-out; border-radius:4px;}
+.liveproj{font-size:.8rem; font-weight:700; color:var(--green-d); background:#eafaf1; border:1px solid #cfead9; border-radius:8px; padding:5px 10px; margin-bottom:7px;}
 .livebox{margin-top:12px; padding:9px 12px; border-radius:11px; background:linear-gradient(135deg,#ffeaec,#fff6ed); border:1px solid #f6c9cf;}
 .livehdr{font-size:.78rem; font-weight:800; color:var(--red); margin-bottom:6px;}
 .levs{display:flex; flex-wrap:wrap; gap:6px;}
