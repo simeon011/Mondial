@@ -43,6 +43,33 @@ body{
 .bg-orbs span:nth-child(2){width:420px; height:420px; top:200px; left:-160px; background:radial-gradient(circle, #2d6cff44, transparent 70%);}
 .bg-orbs span:nth-child(3){width:560px; height:560px; bottom:-240px; right:-60px; background:radial-gradient(circle, #f5a62344, transparent 70%);}
 
+/* ===== Модерни ефекти ===== */
+@keyframes fadeUp{from{opacity:0; transform:translateY(12px);}to{opacity:1; transform:none;}}
+.match, .gcard, .dayhead{animation:fadeUp .4s cubic-bezier(.2,.7,.3,1) both;}
+.match.no-anim{animation:none;}            /* при тих жив ъпдейт без премигване */
+.gcard{transition:transform .2s, box-shadow .2s;}
+.gcard:hover{transform:translateY(-2px); box-shadow:var(--shadow-lg);}
+
+/* леко плаващи фонови петна */
+@keyframes drift1{0%,100%{transform:translate(0,0);}50%{transform:translate(34px,42px);}}
+@keyframes drift2{0%,100%{transform:translate(0,0);}50%{transform:translate(-42px,30px);}}
+@keyframes drift3{0%,100%{transform:translate(0,0);}50%{transform:translate(22px,-34px);}}
+.bg-orbs span:nth-child(1){animation:drift1 20s ease-in-out infinite;}
+.bg-orbs span:nth-child(2){animation:drift2 26s ease-in-out infinite;}
+.bg-orbs span:nth-child(3){animation:drift3 23s ease-in-out infinite;}
+
+/* блестящо градиентно заглавие */
+.hero h1 span{background-size:220% auto; animation:shine 7s linear infinite;}
+@keyframes shine{to{background-position:220% center;}}
+
+/* по-живи бутони */
+.tab, .chip, .langbtn, .match{transition:transform .18s, background .2s, color .2s, border-color .2s, box-shadow .2s;}
+.tab:active, .chip:active, .langbtn:active{transform:scale(.94);}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+}
+
 /* ===== Hero ===== */
 .langtoggle{position:absolute; top:14px; right:14px; display:flex; gap:0; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--surface-solid); box-shadow:var(--shadow);}
 .langbtn{appearance:none; border:0; cursor:pointer; background:transparent; color:var(--muted); font-family:inherit; font-weight:800; font-size:.78rem; padding:6px 12px;}
