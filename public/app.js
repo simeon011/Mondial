@@ -614,7 +614,7 @@ function renderMatch(m){
         const curY = (ls[m.home.code].y || 0) + (ls[m.away.code].y || 0);
         projLine = `<div class="liveproj">📈 ${t("live_proj")}: ~${proj(curC, corners.total).toFixed(0)} ${t("corners_w")} · ~${proj(curY, cards.y).toFixed(1)} ${t("lbl_yellow")}</div>`;
       }
-      const evs = (m.liveEvents || []).slice(0, 6).map(e => `<span class="lev">${e.min} ${e.kind}${e.team ? " " + flag(e.team) : ""}</span>`).join("");
+      const evs = (m.liveEvents || []).slice(0, 8).map(e => `<span class="lev">${e.min} ${e.kind}${e.team ? " " + flag(e.team) : ""}${e.player ? " " + e.player.split(" ").pop() : ""}</span>`).join("");
       liveLine = `<div class="livebox"><div class="livehdr">🔴 ${t("live_now").replace("● ", "")} ${m.matchTime || ""} · ${t("live_winprob")}</div>` +
         `${projLine}${evs ? `<div class="levs">${evs}</div>` : ""}${liveStatsHtml(m)}${livePlayersHtml(m)}</div>`;
     }
