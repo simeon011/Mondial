@@ -48,7 +48,7 @@ const L = {
     brandPre:"Мондиал", subtitle:"Прогнози на живо · Elo + статистики от няколко източника",
     tab_schedule:"Програма", tab_groups:"Групи", tab_champion:"Шампион", tab_stats:"Класации", tab_refs:"Съдии", tab_info:"Инфо",
     f_all:"Всички", f_today:"Днес", f_upcoming:"Предстоящи", f_played:"Изиграни",
-    loading:"Зареждане…", updated:"Обновено", liveRefresh:"🔴 на живо — обновяване на 20 сек", normalRefresh:"обновяване на 5 мин",
+    loading:"Зареждане…", updated:"Обновено", liveRefresh:"🔴 на живо — обновяване на 20 сек", normalRefresh:"обновяване на 5 мин", search_ph:"🔍 Търси отбор…",
     loadErr:"Грешка при зареждане", retry:"нов опит след 30 сек",
     footer1:'Данни от eloratings.net, api.fifa.com и ESPN — обновяват се автоматично.', footer2:"Прогнозите са вероятности от Elo + голов профил + статистики, не са гаранции.", footer3:"⚠ Залагай само за забавление и с малки суми.",
     acc:"Успеваемост", a_outcome:"изход", a_goals:"голове", a_btts:"гол-гол",
@@ -92,7 +92,7 @@ const L = {
     brandPre:"World Cup", subtitle:"Live predictions · Elo + multi-source stats",
     tab_schedule:"Schedule", tab_groups:"Groups", tab_champion:"Winner", tab_stats:"Leaders", tab_refs:"Referees", tab_info:"About",
     f_all:"All", f_today:"Today", f_upcoming:"Upcoming", f_played:"Played",
-    loading:"Loading…", updated:"Updated", liveRefresh:"🔴 live — refreshing every 20s", normalRefresh:"refreshing every 5 min",
+    loading:"Loading…", updated:"Updated", liveRefresh:"🔴 live — refreshing every 20s", normalRefresh:"refreshing every 5 min", search_ph:"🔍 Search team…",
     loadErr:"Loading error", retry:"retrying in 30s",
     footer1:'Data from eloratings.net, api.fifa.com and ESPN — auto-updated.', footer2:"Predictions are probabilities from Elo + goal profile + stats, not guarantees.", footer3:"⚠ For fun only — bet small if at all.",
     acc:"Accuracy", a_outcome:"outcome", a_goals:"goals", a_btts:"BTTS",
@@ -170,7 +170,9 @@ let filter = "all";
 const openMatches = new Set();
 let flashing = false;        // true само при тих ъпдейт на живи карти → светва промененото
 const liveSnap = {};         // предишните живи стойности (за засичане на промяна)
+const goalSnap = {};         // предишните голове по мач (за светкавица при гол)
 let lastSig = "";            // подпис на изгледа (структура) — за да решим пълно или тихо обновяване
+let searchQuery = "";        // търсене на отбор в програмата
 
 // ---- интерфейс (преводим): табове, филтри, заглавие, статус ----
 const TABS = [["schedule","📅"],["groups","🏆"],["champion","🏅"],["stats","📊"],["refs","🧑‍⚖️"],["info","ℹ️"]];
@@ -183,6 +185,15 @@ function renderChrome(){
   document.querySelectorAll(".langbtn").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
   document.getElementById("tabs").innerHTML = TABS.map(([id, ic]) => `<button class="tab${id === activeTab ? " active" : ""}" data-tab="${id}"><span class="ic">${ic}</span> ${t("tab_" + id)}</button>`).join("");
   document.getElementById("filters").innerHTML = FILTERS.map(f => `<button class="chip${f === filter ? " active" : ""}" data-f="${f}">${t("f_" + f)}</button>`).join("");
+  document.getElementById("search").placeholder = t("search_ph");
+}
+
+// съвпада ли отборът с търсенето (по код или име на двата езика)
+function teamMatches(m){
+  if (!searchQuery) return true;
+  const inq = code => code && (code.toLowerCase().includes(searchQuery) ||
+    (NAMES.bg[code] || "").toLowerCase().includes(searchQuery) || (NAMES.en[code] || "").toLowerCase().includes(searchQuery));
+  return inq(m.home && m.home.code) || inq(m.away && m.away.code);
 }
 function setStatus(){
   const status = document.getElementById("status");
@@ -247,31 +258,71 @@ function liveTick(){
     if (m.status !== 3 || !matchPassesFilter(m)) continue;
     const el = document.querySelector(`.match[onclick*="${m.id}"]`);
     if (!el) continue;
+    const goals = (m.hs || 0) + (m.as || 0);
+    const isGoal = goalSnap[m.id] != null && goals > goalSnap[m.id];   // паднал е нов гол
+    goalSnap[m.id] = goals;
     const tmp = document.createElement("div");
     tmp.innerHTML = renderMatch(m);
     const fresh = tmp.firstElementChild;
-    if (fresh) { fresh.classList.add("no-anim"); wrapTables(fresh); el.replaceWith(fresh); }
+    if (fresh) {
+      fresh.classList.add("no-anim");
+      if (isGoal) fresh.classList.add("goal-flash");
+      wrapTables(fresh);
+      el.replaceWith(fresh);
+    }
   }
   flashing = false;
 }
 
+// плавно „избягване" на чистите числа от 0 до стойността им
+function animateCounts(root){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const targets = [];
+  root.querySelectorAll(".pbar div, .scorer b, .bp, .stat .v, .vrow b, .champbanner b").forEach(el => {
+    const mt = el.textContent.trim().match(/^(~?)(\d+(?:\.\d+)?)(%?)$/);
+    if (!mt) return;
+    const target = parseFloat(mt[2]);
+    if (!(target > 0)) return;
+    const dec = (mt[2].split(".")[1] || "").length;
+    targets.push({ el, pre: mt[1], target, suf: mt[3], dec });
+    el.textContent = mt[1] + (0).toFixed(dec) + mt[3];
+  });
+  if (!targets.length) return;
+  const set = e => { for (const it of targets) it.el.textContent = it.pre + (it.target * e).toFixed(it.dec) + it.suf; };
+  let done = false;
+  const finish = () => { if (done) return; done = true; set(1); };           // винаги показва верните числа
+  const t0 = performance.now(), dur = 650;
+  (function step(now){
+    const k = Math.min(1, (now - t0) / dur);
+    if (k >= 1) return finish();
+    set(1 - Math.pow(1 - k, 3));
+    requestAnimationFrame(step);
+  })(t0);
+  setTimeout(finish, dur + 500);   // предпазен таймер, ако rAF е спрян (фон/телефон)
+}
+
 function render(){
+  const sched = activeTab === "schedule";
   const ff = document.getElementById("filters");
-  if (ff) ff.style.display = activeTab === "schedule" ? "flex" : "none";
+  if (ff) ff.style.display = sched ? "flex" : "none";
+  const sb = document.getElementById("search");
+  if (sb) sb.style.display = sched ? "block" : "none";
   const c = document.getElementById("content");
   if (!DATA && activeTab !== "info") return;
   if (activeTab === "info") c.innerHTML = renderAbout();
-  else if (activeTab === "schedule") c.innerHTML = renderSchedule();
+  else if (sched) c.innerHTML = renderSchedule();
   else if (activeTab === "groups") c.innerHTML = renderGroups();
   else if (activeTab === "champion") c.innerHTML = renderChampion();
   else if (activeTab === "stats") c.innerHTML = renderLeaderboards();
   else c.innerHTML = renderRefs();
   wrapTables(c);
+  animateCounts(c);
   lastSig = viewSig();
 }
 
 // ---- програма ----
 function matchPassesFilter(m){
+  if (!teamMatches(m)) return false;
   const today = new Date().toDateString();
   if (filter === "today") return new Date(m.date).toDateString() === today;
   if (filter === "upcoming") return m.status !== 0;
@@ -1026,6 +1077,10 @@ document.querySelector(".langtoggle").addEventListener("click", e => {
   const b = e.target.closest(".langbtn"); if (!b) return;
   lang = b.dataset.lang; localStorage.setItem("lang", lang);
   renderChrome(); setStatus(); renderAccuracy(); render();
+});
+document.getElementById("search").addEventListener("input", e => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  if (activeTab === "schedule") render();
 });
 
 renderChrome();
