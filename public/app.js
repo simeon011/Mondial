@@ -250,7 +250,7 @@ function liveTick(){
     const tmp = document.createElement("div");
     tmp.innerHTML = renderMatch(m);
     const fresh = tmp.firstElementChild;
-    if (fresh) { wrapTables(fresh); el.replaceWith(fresh); }
+    if (fresh) { fresh.classList.add("no-anim"); wrapTables(fresh); el.replaceWith(fresh); }
   }
   flashing = false;
 }
