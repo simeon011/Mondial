@@ -330,9 +330,9 @@ async function getLiveData(matches) {
           case 18: t.fouls++; if (p) p.fouls++; break;
           case 57: { const opp = code === m.home.code ? m.away.code : m.home.code; if (stats[opp]) stats[opp].onTarget++; break; }
         }
-        const kind = e.Type === 0 ? "⚽" : e.Type === 2 ? "🟨" : e.Type === 3 ? "🟥" : e.Type === 5 ? "🔄" : null;
+        const kind = e.Type === 0 ? "⚽" : e.Type === 2 ? "🟨" : e.Type === 3 ? "🟥" : e.Type === 18 ? "⚠️" : e.Type === 5 ? "🔄" : null;
         if (!kind) continue;
-        evs.push({ min: e.MatchMinute || "", team: code, kind, desc: (e.EventDescription && e.EventDescription[0]) ? e.EventDescription[0].Description : "" });
+        evs.push({ min: e.MatchMinute || "", team: code, kind, player: names[e.IdPlayer] ? names[e.IdPlayer].name : null });
       }
       stats[m.home.code].onTarget += stats[m.home.code].goals;
       stats[m.away.code].onTarget += stats[m.away.code].goals;
@@ -387,7 +387,7 @@ async function getLiveData(matches) {
           }
         }
       } catch (e) { /* ако ESPN не отговори, остават числата от ФИФА */ }
-      m.liveEvents = evs.slice(-12).reverse();
+      m.liveEvents = evs.slice(-16).reverse();
       m.liveStats = stats;
       // активните играчи по отбор (с поне едно действие), подредени по значимост
       const grouped = { [m.home.code]: [], [m.away.code]: [] };
