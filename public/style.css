@@ -46,6 +46,8 @@ body{
 @keyframes fadeUp{from{opacity:0; transform:translateY(12px);}to{opacity:1; transform:none;}}
 .match, .gcard, .dayhead{animation:fadeUp .4s cubic-bezier(.2,.7,.3,1) both;}
 .match.no-anim{animation:none;}            /* при тих жив ъпдейт без премигване */
+@keyframes goalFlash{0%{box-shadow:0 0 0 2px var(--green), 0 0 34px -4px var(--green); background:rgba(31,217,139,.2);}100%{box-shadow:var(--shadow); background:var(--surface-solid);}}
+.match.goal-flash{animation:goalFlash 1.7s ease-out;}   /* паднал е гол на живо */
 .gcard{transition:transform .2s, box-shadow .2s;}
 .gcard:hover{transform:translateY(-2px); box-shadow:var(--shadow-lg);}
 
@@ -118,8 +120,8 @@ body{
 .navbar{position:sticky; top:0; z-index:50; padding:10px 0; margin-bottom:8px;}
 .navbar::before{
   content:""; position:absolute; inset:0;
-  background:rgba(10,15,28,.78); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--line);
+  background:rgba(12,18,32,.55); backdrop-filter:blur(20px) saturate(1.5); -webkit-backdrop-filter:blur(20px) saturate(1.5);
+  border-bottom:1px solid var(--line-strong); box-shadow:0 6px 24px -10px rgba(0,0,0,.5);
 }
 .navbar-inner{
   position:relative; max-width:980px; margin:0 auto; padding:10px 14px;
@@ -127,7 +129,8 @@ body{
 }
 #tabs{
   display:flex; gap:4px; padding:5px; border-radius:15px;
-  background:var(--surface-solid); border:1px solid var(--line); box-shadow:var(--shadow);
+  background:var(--surface); border:1px solid var(--line-strong); box-shadow:var(--shadow);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
   max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
 }
 #tabs::-webkit-scrollbar{display:none;}
@@ -156,6 +159,23 @@ td.teamcell{white-space:nowrap;}
 }
 .chip:hover{color:var(--text); border-color:var(--line-strong);}
 .chip.active{color:#fff; border-color:var(--accent); background:linear-gradient(135deg, var(--accent), #5a8bff);}
+
+/* търсачка за отбори */
+.search{
+  width:100%; max-width:440px; appearance:none; font-family:inherit; font-size:.86rem; font-weight:500;
+  background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:999px;
+  padding:8px 16px; outline:none; backdrop-filter:blur(10px); transition:border-color .2s, box-shadow .2s;
+}
+.search::placeholder{color:var(--faint);}
+.search:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,140,255,.2);}
+
+/* скелетен зареждащ екран */
+@keyframes shimmer{0%,100%{opacity:.4;}50%{opacity:.85;}}
+.skel-day{height:24px; width:150px; border-radius:999px; background:var(--surface-solid); margin:20px 2px 12px; animation:shimmer 1.4s ease-in-out infinite;}
+.skel-card{height:92px; border-radius:var(--radius); background:var(--surface-solid); border:1px solid var(--line); margin-bottom:12px; animation:shimmer 1.4s ease-in-out infinite;}
+.skel-card:nth-child(3){animation-delay:.15s;}
+.skel-card:nth-child(4){animation-delay:.3s;}
+.skel-card:nth-child(5){animation-delay:.45s;}
 
 /* ===== Контейнер ===== */
 #content{max-width:980px; margin:0 auto; padding:6px 14px 10px;}
